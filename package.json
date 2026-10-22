@@ -2,26 +2,59 @@
   "name": "job-hunter",
   "version": "0.1.0",
   "private": true,
+  "description": "Personal job-search assistant: CV import, real offer ingestion, LLM fit analysis and tailored application documents",
+  "keywords": [
+    "drizzle-orm",
+    "job-search",
+    "llm",
+    "nextjs",
+    "ollama",
+    "tailwindcss",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "Luis Agustin Dominguez Sangla",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "oxlint",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "node --env-file=.env --import tsx src/infrastructure/db/seed.ts",
+    "db:studio": "drizzle-kit studio",
+    "fetch-jobs": "node --env-file=.env --import tsx scripts/fetch-jobs.ts",
+    "analyze-jobs": "node --env-file=.env --import tsx scripts/analyze-jobs.ts",
+    "auth:hash": "node --import tsx scripts/auth-hash.ts"
   },
   "dependencies": {
+    "drizzle-orm": "^0.45.4",
+    "jose": "^6.2.13",
     "next": "16.3.5",
+    "pg": "^8.23.1",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "unpdf": "^1.9.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^24.19.2",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.3.5",
+    "drizzle-kit": "^0.31.11",
+    "oxfmt": "^0.74.0",
+    "oxlint": "^1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^5.0.5"
   },
   "packageManager": "pnpm@11.20.0"
 }

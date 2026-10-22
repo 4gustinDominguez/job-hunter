@@ -1,0 +1,135 @@
+export interface CvFacts {
+  email?: string;
+  phone?: string;
+  name?: string;
+  skillNames: string[];
+}
+
+const EMAIL_REGEX = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+const PHONE_CANDIDATE_REGEX = /\+?[\d\s().-]{8,}\d/g;
+const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const MIN_PHONE_DIGITS = 9;
+const MAX_PHONE_DIGITS = 15;
+
+const NAME_HEADER_BLACKLIST =
+  /^(?:curriculum|resume|résumé|cv|vitae|professional|contact|details|profile|about|personal|summary|experience|education|skills?)\b/i;
+
+const SKILLS_HEADING_REGEX =
+  /^\s*(?:(?:technical|technologies|tech|core\s+)?\s*skills?|tech\s*stack|stack|core\s+competenc(?:y|ies))\s*:?\s*$/i;
+
+const SECTION_HEADING_REGEX =
+  /^\s*(?:\d+[\s.)]+)?\s*(?:work\s+|professional\s+|relevant\s+)?(?:experience|employment(?:\s+history)?|education|academic|projects?|languages?|certifications?|courses?|awards?|honou?rs?|references?|summary|about(?:\s+me)?|contact(?:\s+details)?|personal\s+details|interests|hobbies|volunteering)\s*:?\s*$/i;
+
+const SKILL_MAX_LINES = 40;
+
+/**
+ * Deterministic pre-pass over CV text: verifiable facts (contact, name,
+ * skills list) extracted with regex only — zero LLM. The model then judges
+ * (categories, levels, dates); for contact fields these facts always win.
+ */
+export function extractCvFacts(text: string): CvFacts {
+  return {
+    email: extractEmail(text),
+    phone: extractPhone(text),
+    name: extractName(text),
+    skillNames: extractSkillNames(text),
+  };
+}
+
+export function buildFactsBlock(facts: CvFacts): string {
+  const lines: string[] = ["EXTRACTED FACTS (deterministic — use verbatim, do not re-invent):"];
+  if (facts.name) lines.push(`- Name: ${facts.name}`);
+  if (facts.email) lines.push(`- Email: ${facts.email}`);
+  if (facts.phone) lines.push(`- Phone: ${facts.phone}`);
+  if (facts.skillNames.length > 0) {
+    lines.push(
+      `- Skills list (categorize EVERY entry with category and level, keep the original names): ${facts.skillNames.join(", ")}`,
+    );
+  }
+  return lines.join("\n");
+}
+
+function extractEmail(text: string): string | undefined {
+  const match = text.match(EMAIL_REGEX);
+  return match?.[0];
+}
+
+function extractPhone(text: string): string | undefined {
+  const candidates = text.match(PHONE_CANDIDATE_REGEX);
+  if (!candidates) return undefined;
+  for (const candidate of candidates) {
+    const trimmed = candidate.trim();
+    if (ISO_DATE_REGEX.test(trimmed)) continue;
+    const digits = trimmed.replace(/\D/g, "");
+    if (digits.length < MIN_PHONE_DIGITS || digits.length > MAX_PHONE_DIGITS) continue;
+    // Years-with-dashes false positives ("2022 - 2023") carry two 4-digit blocks
+    if (/^\d{4}\s*-\s*\d{4}$/.test(trimmed)) continue;
+    return trimmed.replace(/\s+/g, " ");
+  }
+  return undefined;
+}
+
+function extractName(text: string): string | undefined {
+  const firstLine = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => line !== "");
+  if (!firstLine || firstLine.length > 60) return undefined;
+  if (NAME_HEADER_BLACKLIST.test(firstLine)) return undefined;
+  if (/[0-9@]/.test(firstLine)) return undefined;
+  const words = firstLine.split(/\s+/);
+  if (words.length < 2 || words.length > 6) return undefined;
+  if (!words.every((word) => /^[\p{L}][\p{L}'.-]*$/u.test(word))) return undefined;
+  return firstLine;
+}
+
+function extractSkillNames(text: string): string[] {
+  const lines = text.split(/\r?\n/);
+  const names: string[] = [];
+  const seen = new Set<string>();
+  let inSection = false;
+  let scanned = 0;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!inSection) {
+      if (SKILLS_HEADING_REGEX.test(trimmed)) {
+        inSection = true;
+      }
+      continue;
+    }
+    if (trimmed === "") continue;
+    if (SECTION_HEADING_REGEX.test(trimmed) || SKILLS_HEADING_REGEX.test(trimmed)) break;
+    scanned += 1;
+    if (scanned > SKILL_MAX_LINES) break;
+
+    for (const raw of splitSkillLine(trimmed)) {
+      const name = cleanSkillName(raw);
+      const key = name.toLowerCase();
+      if (name.length >= 2 && name.length <= 40 && !seen.has(key)) {
+        seen.add(key);
+        names.push(name);
+      }
+    }
+  }
+  return names;
+}
+
+function splitSkillLine(line: string): string[] {
+  return line
+    .replace(/^[•\-*–●▪]+\s*/, "")
+    .split(/[,;·|/]|(?:\s+and\s+)|(?:\s+&\s+)/i)
+    .map((part) => part.trim())
+    .filter((part) => part !== "");
+}
+
+function cleanSkillName(value: string): string {
+  return value
+    .replace(/\([^)]*\)/g, " ")
+    .replace(
+      /\s*[—–-]\s*(?:beginner|intermediate|advanced|expert|basic|b[12]|c[12]|a[12]|junior|mid|senior|excellent|good|native|fluent).*$/i,
+      " ",
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+}

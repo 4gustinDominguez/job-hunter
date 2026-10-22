@@ -1,0 +1,35 @@
+{
+  "data": [
+    {
+      "slug": "junior-marketplace-manager-e-commerce-flexible-remote-option-hamburg-52362",
+      "company_name": "Nordmut GmbH",
+      "title": "Junior Marketplace Manager (E-Commerce) (m/w/d)| Flexible Remote-Option",
+      "description": "<p><strong>Moin, wir sind Nordmut – die Outdoor Brand mit Herz und Vision.</strong></p><p>Du hast Bock auf E-Commerce und nachhaltiges Wachstum?</p>",
+      "remote": false,
+      "url": "https://www.arbeitnow.com/jobs/companies/nordmut-gmbh/junior-marketplace-manager-e-commerce-flexible-remote-option-hamburg-52362",
+      "tags": ["Online Marketing"],
+      "job_types": ["Unbefristeter arbeitsvertrag", "berufseinstieg"],
+      "location": "Hamburg",
+      "created_at": 1792553449
+    },
+    {
+      "slug": "senior-frontend-engineer-remote-berlin-52000",
+      "company_name": "Helio Digital GmbH",
+      "title": "Senior Frontend Engineer (m/f/d)",
+      "description": "<p>We are looking for a Senior Frontend Engineer with React and TypeScript experience.</p>",
+      "remote": true,
+      "url": "https://www.arbeitnow.com/jobs/companies/helio-digital/senior-frontend-engineer-remote-berlin-52000",
+      "tags": ["React", "TypeScript", "Frontend"],
+      "job_types": ["Vollzeit"],
+      "location": "Berlin",
+      "created_at": 1792467049
+    }
+  ],
+  "links": {
+    "first": "https://www.arbeitnow.com/api/job-board-api?page=1",
+    "last": null,
+    "prev": null,
+    "next": "https://www.arbeitnow.com/api/job-board-api?page=2"
+  },
+  "meta": { "current_page": 1, "last_page": 5, "per_page": 20, "total": 100 }
+}

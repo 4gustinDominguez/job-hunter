@@ -1,0 +1,34 @@
+{
+  "job-count": 2,
+  "total-job-count": 10,
+  "jobs": [
+    {
+      "id": 2091158,
+      "url": "https://remotive.com/remote-jobs/software-development/software-engineer-ai-coding-tasks-2091158",
+      "title": "Software Engineer, AI Coding Tasks",
+      "company_name": "Askable",
+      "company_logo": "https://remotive.com/job/2091158/logo",
+      "category": "Software Development",
+      "tags": ["C++", "docker", "go", "python", "Typescript "],
+      "job_type": "contract",
+      "publication_date": "2026-10-17T16:04:29",
+      "candidate_required_location": "Worldwide",
+      "salary": "$1000 per task",
+      "description": "<p>We're looking for experienced software engineers to build AI coding tasks from a codebase they know well.</p>\n<p>Turn a real change from a repository into a task.</p>"
+    },
+    {
+      "id": 2090101,
+      "url": "https://remotive.com/remote-jobs/software-development/full-stack-developer-2090101",
+      "title": "Full Stack Developer",
+      "company_name": "Nomad Labs",
+      "company_logo": null,
+      "category": "Software Development",
+      "tags": ["TypeScript", "React", "Node.js"],
+      "job_type": "full_time",
+      "publication_date": "2026-10-15T09:30:00",
+      "candidate_required_location": "Europe",
+      "salary": null,
+      "description": "<p>Nomad Labs is hiring a Full Stack Developer to build internal tools with TypeScript, React and Node.js.</p>"
+    }
+  ]
+}
