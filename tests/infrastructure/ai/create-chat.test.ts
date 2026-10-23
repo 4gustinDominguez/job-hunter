@@ -49,4 +49,20 @@ describe("resolveChatConfig", () => {
   it("lists ollama-cloud among valid providers on unknown input", () => {
     expect(() => resolveChatConfig("nope")).toThrow(/ollama-cloud/);
   });
+
+  it("fails fast with the fix when AI_PROVIDER=ollama on Vercel (no daemon there)", () => {
+    vi.stubEnv("VERCEL", "1");
+    vi.stubEnv("OLLAMA_URL", "");
+
+    expect(() => resolveChatConfig("ollama")).toThrow(/AI_PROVIDER=ollama-cloud/);
+  });
+
+  it("keeps the daemon path when OLLAMA_URL is explicitly set (tunnels, self-host)", () => {
+    vi.stubEnv("VERCEL", "1");
+    vi.stubEnv("OLLAMA_URL", "https://ollama.example.com/");
+
+    const config = resolveChatConfig("ollama");
+
+    expect(config.baseUrl).toBe("https://ollama.example.com");
+  });
 });

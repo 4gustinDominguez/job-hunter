@@ -3,6 +3,13 @@ import { OllamaNativeChat } from "./ollama-chat";
 
 export function resolveChatConfig(provider: string): ChatConfig {
   if (provider === "ollama") {
+    // Footgun guard: the daemon path silently falls back to localhost:11434,
+    // which on Vercel produces an opaque ECONNREFUSED. Fail fast with the fix.
+    if (process.env.VERCEL && !process.env.OLLAMA_URL) {
+      throw new Error(
+        "AI_PROVIDER=ollama talks to the local Ollama daemon, which does not exist on Vercel. Set AI_PROVIDER=ollama-cloud and OLLAMA_API_KEY instead.",
+      );
+    }
     const baseUrl = process.env.OLLAMA_URL ?? "http://localhost:11434";
     return {
       provider: "ollama",
