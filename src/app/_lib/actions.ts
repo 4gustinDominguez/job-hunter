@@ -1,5 +1,6 @@
 "use server";
 
+import { after } from "next/server";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import type { SaveProfileInput } from "@/application";
@@ -138,19 +139,25 @@ export async function fetchJobsAction(
       criteria = criteriaFromProfile(profile);
     }
   }
-  const result = await ingestJobs.run(criteria);
-  const prefilter = await prefilterJobs.run();
-  const errors =
-    result.errors.length > 0
-      ? ` — ${result.errors.length} error${result.errors.length === 1 ? "" : "s"}: ${result.errors
-          .map((error) => `${error.source}: ${error.message}`)
-          .join(" · ")}`
-      : "";
-  const queued = prefilter.hasProfile
-    ? ` Prefilter queued ${prefilter.pending} for analysis (${prefilter.skipped} skipped).`
-    : "";
+  // Sources take tens of seconds — run ingestion in the background so the form
+  // returns immediately instead of freezing the page until it all completes
+  // (user feedback 2026-10-23).
+  after(async () => {
+    try {
+      const result = await ingestJobs.run(criteria);
+      const prefilter = await prefilterJobs.run();
+      console.log(
+        `[fetch-jobs] done: fetched ${result.fetched} · created ${result.created} · attached ${result.attached} · skipped ${result.skipped} · prefilter queued ${prefilter.pending} (skipped ${prefilter.skipped})`,
+      );
+      for (const error of result.errors) {
+        console.error(`[fetch-jobs] source error — ${error.source}: ${error.message}`);
+      }
+    } catch (error) {
+      console.error("[fetch-jobs] background ingestion failed:", error);
+    }
+  });
   return {
-    message: `Fetched ${result.fetched} · ${result.created} new · ${result.attached} matched an existing job · ${result.skipped} already known.${queued}${errors}`,
+    message: "Ingestion started in the background — refresh in a few seconds to see new jobs.",
   };
 }
 
@@ -280,9 +287,14 @@ export async function importProfileFromCvAction(
     refresh();
     return { draft };
   } catch (error) {
+    // Always log the cause — Vercel runtime logs are the only window into
+    // production failures (user feedback 2026-10-23: "logs don't say why").
+    // Never log the CV content or draft (PII).
     if (error instanceof CvExtractionError) {
+      console.error(`[import-cv] extraction failed (${file.name}):`, error.message);
       return { error: error.message };
     }
+    console.error(`[import-cv] unexpected failure (${file.name}):`, error);
     throw error;
   }
 }

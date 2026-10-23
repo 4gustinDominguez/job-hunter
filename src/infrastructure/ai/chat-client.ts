@@ -33,6 +33,23 @@ export class ChatTimeoutError extends Error {
   }
 }
 
+/**
+ * Normalize a non-timeout fetch failure keeping the cause chain visible:
+ * undici reports plain "fetch failed" and hides ECONNREFUSED/DNS errors in
+ * `error.cause` — without it, production failures are undiagnosable from the
+ * UI message or Vercel logs alone.
+ */
+export function toNetworkError(error: unknown, baseUrl: string): Error {
+  const messages: string[] = [];
+  let current: unknown = error;
+  while (current instanceof Error && messages.length < 3) {
+    if (current.message) messages.push(current.message);
+    current = current.cause;
+  }
+  if (messages.length === 0) messages.push(String(error));
+  return new Error(`request to ${baseUrl} failed (${messages.join(" · ")})`, { cause: error });
+}
+
 export interface ChatClient {
   readonly provider: string;
   readonly model: string;
@@ -73,7 +90,7 @@ export class OpenAiCompatibleChat implements ChatClient {
       if (error instanceof Error && /timeout/i.test(error.message)) {
         throw new ChatTimeoutError(Math.round(timeoutMs / 1000));
       }
-      throw error;
+      throw toNetworkError(error, this.config.baseUrl);
     });
     if (!response.ok) {
       const detail = await response.text().catch(() => "");

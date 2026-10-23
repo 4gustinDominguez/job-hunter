@@ -10,5 +10,16 @@ export async function GET(request: Request) {
   const ingest = await ingestJobs.run({ keywords: [] });
   const prefilter = await prefilterJobs.run();
   const analysis = await analyzePendingJobs.run();
+  // One structured summary line per run — the only way to see cron health in
+  // Vercel runtime logs at a glance (no PII: counts and error texts only).
+  console.log(
+    `[cron] ingest: fetched ${ingest.fetched} · created ${ingest.created} · attached ${ingest.attached} · skipped ${ingest.skipped} · errors ${ingest.errors.length} | prefilter: queued ${prefilter.pending} · skipped ${prefilter.skipped} | analysis: analyzed ${analysis.analyzed} · strong ${analysis.strong} · potential ${analysis.potential} · weak ${analysis.weak} · none ${analysis.none} · failed ${analysis.failed}`,
+  );
+  for (const error of ingest.errors) {
+    console.error(`[cron] ingest error — ${error.source}: ${error.message}`);
+  }
+  for (const error of analysis.errors) {
+    console.error(`[cron] analysis error — ${error.title}: ${error.message}`);
+  }
   return NextResponse.json({ ingest, prefilter, analysis });
 }

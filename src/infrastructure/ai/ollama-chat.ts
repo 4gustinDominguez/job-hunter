@@ -5,7 +5,7 @@ import type {
   ChatResult,
   ChatTurn,
 } from "./chat-client";
-import { ChatTimeoutError } from "./chat-client";
+import { ChatTimeoutError, toNetworkError } from "./chat-client";
 
 const DEFAULT_TIMEOUT_MS = 180_000;
 
@@ -55,7 +55,7 @@ export class OllamaNativeChat implements ChatClient {
       if (error instanceof Error && /timeout/i.test(error.message)) {
         throw new ChatTimeoutError(Math.round(timeoutMs / 1000));
       }
-      throw error;
+      throw toNetworkError(error, this.config.baseUrl);
     });
 
     const payload = (await response.json().catch(() => ({}))) as OllamaChatResponse;
