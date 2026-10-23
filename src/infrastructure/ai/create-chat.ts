@@ -9,9 +9,25 @@ export function resolveChatConfig(provider: string): ChatConfig {
       baseUrl: baseUrl.replace(/\/$/, ""),
       // Cloud by default: local CPU models are 4-10x slower and produce invalid
       // JSON more often (user decision 2026-10-21; see .env.example for timings).
-      // NOTE: Ollama's free cloud models (gemma4:31b-cloud) route through the
-      // local daemon — fine for dev, NOT usable on serverless (Vercel).
+      // NOTE: this path goes through the LOCAL daemon — for Vercel/serverless use
+      // AI_PROVIDER=ollama-cloud (hosted API, same models, needs OLLAMA_API_KEY).
       model: process.env.OLLAMA_MODEL ?? "gemma4:31b-cloud",
+      jsonMode: true,
+      numCtx: Number(process.env.OLLAMA_NUM_CTX ?? 8192),
+    };
+  }
+  if (provider === "ollama-cloud") {
+    const token = process.env.OLLAMA_API_KEY;
+    if (!token) {
+      throw new Error("AI_PROVIDER=ollama-cloud requires OLLAMA_API_KEY to be set.");
+    }
+    return {
+      provider: "ollama-cloud",
+      baseUrl: (process.env.OLLAMA_CLOUD_URL ?? "https://ollama.com").replace(/\/$/, ""),
+      apiKey: token,
+      // Hosted API uses the plain tag (gemma4:31b); the "-cloud" suffix is only
+      // for the local CLI/daemon.
+      model: process.env.OLLAMA_CLOUD_MODEL ?? "gemma4:31b",
       jsonMode: true,
       numCtx: Number(process.env.OLLAMA_NUM_CTX ?? 8192),
     };
@@ -40,7 +56,9 @@ export function resolveChatConfig(provider: string): ChatConfig {
       model: process.env.HF_MODEL ?? "Qwen/Qwen2.5-7B-Instruct",
     };
   }
-  throw new Error(`Unknown AI_PROVIDER "${provider}". Use "ollama", "groq" or "huggingface".`);
+  throw new Error(
+    `Unknown AI_PROVIDER "${provider}". Use "ollama", "ollama-cloud", "groq" or "huggingface".`,
+  );
 }
 
 export interface ChatAndConfig {
@@ -52,6 +70,8 @@ export function createChat(provider = process.env.AI_PROVIDER ?? "ollama"): Chat
   const resolved = provider.toLowerCase();
   const config = resolveChatConfig(resolved);
   const chat =
-    resolved === "ollama" ? new OllamaNativeChat(config) : new OpenAiCompatibleChat(config);
+    resolved === "ollama" || resolved === "ollama-cloud"
+      ? new OllamaNativeChat(config)
+      : new OpenAiCompatibleChat(config);
   return { chat, config };
 }

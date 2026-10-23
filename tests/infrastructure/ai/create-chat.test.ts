@@ -26,7 +26,27 @@ describe("resolveChatConfig", () => {
     expect(() => resolveChatConfig("groq")).toThrow(/GROQ_API_KEY/);
   });
 
-  it("lists groq among valid providers on unknown input", () => {
-    expect(() => resolveChatConfig("nope")).toThrow(/ollama", "groq" or "huggingface/);
+  it("builds the ollama-cloud config (hosted API, production)", () => {
+    vi.stubEnv("OLLAMA_API_KEY", "ok_test");
+
+    const config = resolveChatConfig("ollama-cloud");
+
+    expect(config).toMatchObject({
+      provider: "ollama-cloud",
+      baseUrl: "https://ollama.com",
+      apiKey: "ok_test",
+      model: "gemma4:31b",
+      jsonMode: true,
+    });
+  });
+
+  it("requires OLLAMA_API_KEY", () => {
+    vi.stubEnv("OLLAMA_API_KEY", "");
+
+    expect(() => resolveChatConfig("ollama-cloud")).toThrow(/OLLAMA_API_KEY/);
+  });
+
+  it("lists ollama-cloud among valid providers on unknown input", () => {
+    expect(() => resolveChatConfig("nope")).toThrow(/ollama-cloud/);
   });
 });
