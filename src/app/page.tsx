@@ -15,7 +15,7 @@ import {
   listJobs,
   searchProfileRepository,
 } from "./_lib/container";
-import { formatDate, formatLocation, isOlderThan, isToday, timeAgo } from "./_lib/format";
+import { formatDate, formatLocation, isOlderThan, startOfToday, timeAgo } from "./_lib/format";
 
 export const metadata: Metadata = { title: "Hunt" };
 
@@ -39,32 +39,31 @@ function publishedDate(job: { publishedAt?: Date; discoveredAt: Date }): Date {
 }
 
 export default async function HuntDashboardPage() {
-  const [jobs, applications, profiles, lastRun] = await Promise.all([
-    listJobs.run(),
-    applicationRepository.list(),
-    searchProfileRepository.list(),
-    ingestionRunRepository.latest(),
-  ]);
-  const analyses = await analysisRepository.getMany(jobs.map((job) => job.id));
-  // Funnel: applied jobs live on /applications — keep them out of the review
-  // sections here (recent offers + strong fit).
-  const appliedIds = new Set(applications.map((application) => application.jobId));
+  // Counters and lists are separate SQL pages — the dashboard must not load
+  // the whole jobs table (~8 MB of descriptions at 2.3k rows).
+  const [tracked, newToday, awaiting, recentResult, strongResult, applications, profiles, lastRun] =
+    await Promise.all([
+      listJobs.page({}, { limit: 1, offset: 0 }),
+      listJobs.page({ discoveredSince: startOfToday() }, { limit: 1, offset: 0 }),
+      listJobs.page({ analysisState: "pending" }, { limit: 1, offset: 0 }),
+      listJobs.page({ excludeApplied: true }, { limit: RECENT_OFFERS_LIMIT, offset: 0 }),
+      listJobs.page(
+        { classifications: ["STRONG"], excludeApplied: true },
+        { limit: STRONG_FIT_LIMIT, offset: 0 },
+      ),
+      applicationRepository.list(),
+      searchProfileRepository.list(),
+      ingestionRunRepository.latest(),
+    ]);
+  const recentOffers = recentResult.jobs;
+  const strongFit = strongResult.jobs;
+  const analyses = await analysisRepository.getMany(
+    [...recentOffers, ...strongFit].map((job) => job.id),
+  );
 
-  const recentOffers = jobs
-    .filter((job) => !appliedIds.has(job.id))
-    .toSorted((a, b) => publishedDate(b).getTime() - publishedDate(a).getTime())
-    .slice(0, RECENT_OFFERS_LIMIT);
-
-  const strongFit = jobs
-    .filter(
-      (job) =>
-        !appliedIds.has(job.id) && analyses.get(job.id)?.analysis.classification === "STRONG",
-    )
-    .toSorted((a, b) => publishedDate(b).getTime() - publishedDate(a).getTime())
-    .slice(0, STRONG_FIT_LIMIT);
-
-  const newToday = jobs.filter((job) => isToday(job.discoveredAt)).length;
-  const awaiting = jobs.filter((job) => job.analysisState === "pending").length;
+  const jobsTracked = tracked.total;
+  const newTodayCount = newToday.total;
+  const awaitingCount = awaiting.total;
   const active = applications.filter(
     (app) => app.status !== "REJECTED" && app.status !== "WITHDRAWN",
   ).length;
@@ -118,15 +117,15 @@ export default async function HuntDashboardPage() {
       <section aria-label="Summary" className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <div className="rounded-lg border border-line bg-surface p-4">
           <p className="text-sm text-muted">Offers tracked</p>
-          <p className="mt-1 text-3xl font-semibold">{jobs.length}</p>
+          <p className="mt-1 text-3xl font-semibold">{jobsTracked}</p>
         </div>
         <div className="rounded-lg border border-line bg-surface p-4">
           <p className="text-sm text-muted">Discovered today</p>
-          <p className="mt-1 text-3xl font-semibold">{newToday}</p>
+          <p className="mt-1 text-3xl font-semibold">{newTodayCount}</p>
         </div>
         <div className="rounded-lg border border-line bg-surface p-4">
           <p className="text-sm text-muted">Awaiting analysis</p>
-          <p className="mt-1 text-3xl font-semibold">{awaiting}</p>
+          <p className="mt-1 text-3xl font-semibold">{awaitingCount}</p>
         </div>
         <div className="rounded-lg border border-line bg-surface p-4">
           <p className="text-sm text-muted">Active applications</p>

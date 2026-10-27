@@ -1,14 +1,24 @@
 import type { JobFilter } from "@/application/jobs/job-filter";
 import type { JobRepositoryPort } from "@/application/ports/job-repository-port";
 import { canonicalizeUrl, jobContentKey } from "@/domain/job/dedup";
-import type { AnalysisState } from "@/domain/matching/job-analysis";
+import type { AnalysisState, MatchClassification } from "@/domain/matching/job-analysis";
 import type { Job } from "@/domain/job/job";
 import type { JobSourceType } from "@/domain/job/enums";
 import { normalizeText } from "@/domain/shared/text";
 
+const FIT_RANK: Record<MatchClassification, number> = {
+  STRONG: 0,
+  POTENTIAL: 1,
+  WEAK: 2,
+  NONE: 3,
+};
+
 export class InMemoryJobRepository implements JobRepositoryPort {
   private readonly canonical = new Map<string, Job>();
   private readonly listingsByJob = new Map<string, Job[]>();
+  /** Test-populated stand-ins for the job_analyses / applications tables. */
+  readonly analysisClassifications = new Map<string, MatchClassification>();
+  readonly appliedJobIds = new Set<string>();
 
   async getById(id: string): Promise<Job | null> {
     return this.canonical.get(id) ?? null;
@@ -18,6 +28,23 @@ export class InMemoryJobRepository implements JobRepositoryPort {
     let result = [...this.canonical.values()];
     if (filter.includeDismissed !== true) {
       result = result.filter((job) => job.dismissedAt === undefined);
+    }
+    if (filter.classifications !== undefined && filter.classifications.length > 0) {
+      const allowed = new Set(filter.classifications);
+      result = result.filter((job) => {
+        const classification = this.analysisClassifications.get(job.id);
+        return classification !== undefined && allowed.has(classification);
+      });
+    }
+    if (filter.analysisState !== undefined) {
+      result = result.filter((job) => (job.analysisState ?? "none") === filter.analysisState);
+    }
+    if (filter.excludeApplied === true) {
+      result = result.filter((job) => !this.appliedJobIds.has(job.id));
+    }
+    if (filter.discoveredSince !== undefined) {
+      const since = filter.discoveredSince.getTime();
+      result = result.filter((job) => job.discoveredAt.getTime() >= since);
     }
     if (filter.query !== undefined) {
       const query = normalizeText(filter.query);
@@ -49,7 +76,25 @@ export class InMemoryJobRepository implements JobRepositoryPort {
         (this.listingsByJob.get(job.id) ?? []).some((listing) => listing.source === source),
       );
     }
+    if (filter.sortByFit === true) {
+      const rank = (job: Job): number =>
+        FIT_RANK[this.analysisClassifications.get(job.id) ?? "NONE"];
+      return result.toSorted(
+        (a, b) => rank(a) - rank(b) || b.discoveredAt.getTime() - a.discoveredAt.getTime(),
+      );
+    }
     return result.toSorted((a, b) => b.discoveredAt.getTime() - a.discoveredAt.getTime());
+  }
+
+  async listPage(
+    filter: JobFilter,
+    pagination: { limit: number; offset: number },
+  ): Promise<{ jobs: Job[]; total: number }> {
+    const all = await this.list(filter);
+    return {
+      jobs: all.slice(pagination.offset, pagination.offset + pagination.limit),
+      total: all.length,
+    };
   }
 
   async findByUrl(url: string): Promise<Job | null> {

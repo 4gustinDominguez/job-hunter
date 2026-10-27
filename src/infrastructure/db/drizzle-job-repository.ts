@@ -1,5 +1,5 @@
 /* oxlint-disable no-await-in-loop -- saveMany chunks insert sequentially by contract */
-import { and, asc, desc, eq, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gte, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import type { JobFilter } from "@/application/jobs/job-filter";
 import type { JobRepositoryPort } from "@/application/ports/job-repository-port";
 import { canonicalizeUrl, jobContentKey } from "@/domain/job/dedup";
@@ -7,7 +7,7 @@ import type { JobSourceType } from "@/domain/job/enums";
 import type { AnalysisState } from "@/domain/matching/job-analysis";
 import type { Job } from "@/domain/job/job";
 import type { db } from "./client";
-import { companies, jobListings, jobs } from "./schema";
+import { applications, companies, jobAnalyses, jobListings, jobs } from "./schema";
 
 type Db = typeof db;
 type JobRow = typeof jobs.$inferSelect;
@@ -66,6 +66,65 @@ export class DrizzleJobRepository implements JobRepositoryPort {
   }
 
   async list(filter: JobFilter = {}): Promise<Job[]> {
+    const rows = await this.database
+      .select({ job: jobs, company: companies })
+      .from(jobs)
+      .innerJoin(companies, eq(jobs.companyId, companies.id))
+      .where(and(...this.filterConditions(filter)))
+      // id tiebreaker keeps pagination stable when createdAt collides
+      .orderBy(desc(jobs.createdAt), desc(jobs.id));
+    return this.withFirstListings(rows);
+  }
+
+  /**
+   * Server-side page for the browse views: one count + one limited select
+   * (with the joined analysis only when the fit filter/sort needs it) instead
+   * of loading every matching row and its description.
+   */
+  async listPage(
+    filter: JobFilter,
+    pagination: { limit: number; offset: number },
+  ): Promise<{ jobs: Job[]; total: number }> {
+    const needsFitFilter =
+      filter.classifications !== undefined && filter.classifications.length > 0;
+    const needsAnalysisJoin = needsFitFilter || filter.sortByFit === true;
+    const conditions = this.filterConditions(filter);
+
+    let query = this.database
+      .select({ job: jobs, company: companies })
+      .from(jobs)
+      .innerJoin(companies, eq(jobs.companyId, companies.id))
+      .$dynamic();
+    if (needsAnalysisJoin) {
+      query = query.leftJoin(jobAnalyses, eq(jobAnalyses.jobId, jobs.id));
+    }
+    if (needsFitFilter) {
+      conditions.push(inArray(jobAnalyses.classification, filter.classifications ?? []));
+    }
+    const filtered = query.where(and(...conditions));
+
+    const [{ value: rawTotal }] = await this.database
+      .select({ value: sql<number>`count(*)` })
+      .from(filtered.as("filtered"));
+    const total = Number(rawTotal ?? 0);
+
+    const order: SQL[] =
+      filter.sortByFit === true
+        ? [
+            sql`case ${jobAnalyses.classification} when 'STRONG' then 0 when 'POTENTIAL' then 1 when 'WEAK' then 2 else 3 end`,
+            desc(jobs.createdAt),
+            desc(jobs.id),
+          ]
+        : [desc(jobs.createdAt), desc(jobs.id)];
+    const rows = await filtered
+      .orderBy(...order)
+      .limit(pagination.limit)
+      .offset(pagination.offset);
+    return { jobs: await this.withFirstListings(rows), total };
+  }
+
+  /** Shared WHERE clause for list() and listPage(). */
+  private filterConditions(filter: JobFilter): (SQL | undefined)[] {
     const conditions: (SQL | undefined)[] = [];
     if (filter.query !== undefined && filter.query !== "") {
       const pattern = `%${filter.query}%`;
@@ -98,14 +157,18 @@ export class DrizzleJobRepository implements JobRepositoryPort {
     if (filter.includeDismissed !== true) {
       conditions.push(isNull(jobs.dismissedAt));
     }
-    const rows = await this.database
-      .select({ job: jobs, company: companies })
-      .from(jobs)
-      .innerJoin(companies, eq(jobs.companyId, companies.id))
-      .where(and(...conditions))
-      // id tiebreaker keeps pagination stable when createdAt collides
-      .orderBy(desc(jobs.createdAt), desc(jobs.id));
-    return this.withFirstListings(rows);
+    if (filter.analysisState !== undefined) {
+      conditions.push(eq(jobs.analysisState, filter.analysisState));
+    }
+    if (filter.discoveredSince !== undefined) {
+      conditions.push(gte(jobs.createdAt, filter.discoveredSince));
+    }
+    if (filter.excludeApplied === true) {
+      conditions.push(
+        sql`not exists (select 1 from ${applications} where ${applications.jobId} = ${jobs.id})`,
+      );
+    }
+    return conditions;
   }
 
   async findByUrl(url: string): Promise<Job | null> {

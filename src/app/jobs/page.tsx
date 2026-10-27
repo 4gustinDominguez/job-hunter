@@ -2,12 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FitBadge, FitStateBadge, RemoteBadge, SourceBadge } from "../_components/badges";
 import { dismissJobAction } from "../_lib/actions";
-import { analysisRepository, applicationRepository, listJobs } from "../_lib/container";
+import { analysisRepository, listJobs } from "../_lib/container";
 import { formatLocation, formatSalary } from "../_lib/format";
 import { EMPLOYMENT_TYPES, REMOTE_TYPES } from "@/domain/job/enums";
 import { JOB_SOURCE_TYPES } from "@/domain/job/enums";
 import type { EmploymentType, JobSourceType, RemoteType } from "@/domain/job/enums";
-import type { Job } from "@/domain/job/job";
 import {
   ANALYSIS_STATES,
   MATCH_CLASSIFICATIONS,
@@ -41,10 +40,6 @@ function enumListParam<T extends string>(
   return [...seen];
 }
 
-function publishedDate(job: Job): Date {
-  return job.publishedAt ?? job.discoveredAt;
-}
-
 function selectValue(value: string): string {
   return value;
 }
@@ -64,42 +59,42 @@ export default async function JobsPage({
   const state = asEnumValue<AnalysisState>(sp.state, ANALYSIS_STATES);
   const sortByFit = sp.sort === "fit";
   const showDismissed = sp.dismissed === "1";
+  const rawPage = typeof sp.page === "string" ? Number.parseInt(sp.page, 10) : 1;
+  const requestedPage = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
 
-  const allJobs = await listJobs.run({
+  // Everything (fit/state/applied/dismissed filters, sort, count, limit) runs
+  // in SQL — the browse views must not drag every matching row's description
+  // into the serverless function (~8 MB at 2.3k jobs before this).
+  const filter = {
     query: q || undefined,
     location: location || undefined,
     remoteType,
     employmentType,
     source,
     includeDismissed: showDismissed,
+    classifications: fitValues.length > 0 ? fitValues : undefined,
+    analysisState: state,
+    excludeApplied: true,
+    sortByFit,
+  };
+  let pageResult = await listJobs.page(filter, {
+    limit: PAGE_SIZE,
+    offset: (requestedPage - 1) * PAGE_SIZE,
   });
-  const analyses = await analysisRepository.getMany(allJobs.map((job) => job.id));
-  // Funnel: applied jobs live on /applications — they only clutter the review
-  // list here (the job detail stays reachable from the application page).
-  const applications = await applicationRepository.list();
-  const appliedIds = new Set(applications.map((application) => application.jobId));
-
-  let jobs = allJobs.filter((job) => !appliedIds.has(job.id));
-  if (fitValues.length > 0) {
-    jobs = jobs.filter((job) => {
-      const record = analyses.get(job.id);
-      return record !== undefined && fitValues.includes(record.analysis.classification);
+  const totalPages = Math.max(1, Math.ceil(pageResult.total / PAGE_SIZE));
+  let page = Math.min(requestedPage, totalPages);
+  // A page beyond the end (filters shrank the list since the link was built)
+  // lands on the last page instead of an empty list.
+  if (pageResult.jobs.length === 0 && pageResult.total > 0 && requestedPage > totalPages) {
+    page = totalPages;
+    pageResult = await listJobs.page(filter, {
+      limit: PAGE_SIZE,
+      offset: (totalPages - 1) * PAGE_SIZE,
     });
   }
-  if (state) {
-    jobs = jobs.filter((job) => (job.analysisState ?? "none") === state);
-  }
-  if (sortByFit) {
-    const rank = (job: Job): number => {
-      const record = analyses.get(job.id);
-      return record
-        ? MATCH_CLASSIFICATIONS.indexOf(record.analysis.classification)
-        : MATCH_CLASSIFICATIONS.length;
-    };
-    jobs = jobs.toSorted(
-      (a, b) => rank(a) - rank(b) || publishedDate(b).getTime() - publishedDate(a).getTime(),
-    );
-  }
+  const pageJobs = pageResult.jobs;
+  const total = pageResult.total;
+  const analyses = await analysisRepository.getMany(pageJobs.map((job) => job.id));
 
   const hasFilters = Boolean(
     q ||
@@ -112,14 +107,6 @@ export default async function JobsPage({
     sortByFit ||
     showDismissed,
   );
-
-  // Paginate after all filters/sort: "N matching" is the filtered total, the
-  // page only changes which slice is rendered (2000+ rows froze the browser).
-  const total = jobs.length;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const rawPage = typeof sp.page === "string" ? Number.parseInt(sp.page, 10) : 1;
-  const page = Number.isFinite(rawPage) && rawPage > 0 ? Math.min(rawPage, totalPages) : 1;
-  const pageJobs = jobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   // Rebuild the current query for pagination links (form submits reset to page 1).
   const pageHref = (target: number): `/jobs?${string}` | "/jobs" => {
@@ -153,7 +140,7 @@ export default async function JobsPage({
         <div>
           <h1 className="text-2xl font-semibold">Jobs</h1>
           <p className="text-sm text-muted">
-            {jobs.length} matching
+            {total} matching
             {totalPages > 1 ? ` · page ${page}/${totalPages}` : ""}
           </p>
         </div>
@@ -321,7 +308,7 @@ export default async function JobsPage({
         </div>
       </form>
 
-      {jobs.length === 0 ? (
+      {pageJobs.length === 0 ? (
         <p className="rounded-lg border border-dashed border-line bg-surface p-6 text-sm text-muted">
           No jobs match these filters.{" "}
           <Link href="/" className="font-medium text-accent-strong hover:underline">

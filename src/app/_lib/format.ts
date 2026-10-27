@@ -49,3 +49,10 @@ export function timeAgo(date: Date, now: Date = new Date()): string {
 export function isOlderThan(date: Date, ms: number, now: Date = new Date()): boolean {
   return now.getTime() - date.getTime() > ms;
 }
+
+/** Midnight of the current local day (counters need a stable boundary). */
+export function startOfToday(now: Date = new Date()): Date {
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  return start;
+}

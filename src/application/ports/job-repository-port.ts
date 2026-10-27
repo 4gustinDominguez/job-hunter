@@ -20,6 +20,15 @@ export interface JobRepositoryPort {
   findByContentKeys(contentKeys: string[]): Promise<Job[]>;
   listListings(jobId: string): Promise<Job[]>;
   listByAnalysisState(state: AnalysisState, limit?: number): Promise<Job[]>;
+  /**
+   * Server-side page: same filters as list() plus fit/state/applied, ordered,
+   * limited and counted in SQL — the browse views must not load thousands of
+   * description payloads per render (was ~8 MB at 2.3k jobs).
+   */
+  listPage(
+    filter: JobFilter,
+    pagination: { limit: number; offset: number },
+  ): Promise<{ jobs: Job[]; total: number }>;
   save(job: Job, companyId: string): Promise<Job>;
   /** Bulk insert (jobs + listings) in chunked, transactional batches. */
   saveMany(entries: { job: Job; companyId: string }[]): Promise<void>;

@@ -120,3 +120,69 @@ describe("ListJobs dismissed funnel", () => {
     expect((await useCase.run()).map((job) => job.id).toSorted()).toEqual(["bye", "keep"]);
   });
 });
+
+describe("ListJobs server-side page", () => {
+  let jobs: InMemoryJobRepository;
+  let useCase: ListJobs;
+
+  beforeEach(async () => {
+    jobs = new InMemoryJobRepository();
+    useCase = new ListJobs(jobs);
+    await jobs.save(
+      makeJob({
+        id: "strong-one",
+        url: "https://jobs.example/strong-one",
+        discoveredAt: new Date("2026-10-20T10:00:00Z"),
+      }),
+      "c1",
+    );
+    await jobs.save(
+      makeJob({
+        id: "weak-one",
+        url: "https://jobs.example/weak-one",
+        discoveredAt: new Date("2026-10-21T10:00:00Z"),
+      }),
+      "c2",
+    );
+    await jobs.save(
+      makeJob({
+        id: "pending-one",
+        url: "https://jobs.example/pending-one",
+        analysisState: "pending",
+        discoveredAt: new Date("2026-10-22T10:00:00Z"),
+      }),
+      "c3",
+    );
+    jobs.analysisClassifications.set("strong-one", "STRONG");
+    jobs.analysisClassifications.set("weak-one", "WEAK");
+  });
+
+  it("returns a slice plus the filtered total", async () => {
+    const first = await useCase.page({}, { limit: 2, offset: 0 });
+    expect(first.total).toBe(3);
+    expect(first.jobs.map((job) => job.id)).toEqual(["pending-one", "weak-one"]);
+
+    const second = await useCase.page({}, { limit: 2, offset: 2 });
+    expect(second.jobs.map((job) => job.id)).toEqual(["strong-one"]);
+  });
+
+  it("filters by classification, state and applied in one query", async () => {
+    const strong = await useCase.page({ classifications: ["STRONG"] }, { limit: 10, offset: 0 });
+    expect(strong.jobs.map((job) => job.id)).toEqual(["strong-one"]);
+
+    const pending = await useCase.page({ analysisState: "pending" }, { limit: 10, offset: 0 });
+    expect(pending.total).toBe(1);
+
+    jobs.appliedJobIds.add("strong-one");
+    const unapplied = await useCase.page(
+      { classifications: ["STRONG"], excludeApplied: true },
+      { limit: 10, offset: 0 },
+    );
+    expect(unapplied.total).toBe(0);
+  });
+
+  it("sorts by fit rank when asked", async () => {
+    const result = await useCase.page({ sortByFit: true }, { limit: 10, offset: 0 });
+    expect(result.jobs.map((job) => job.id)).toEqual(["strong-one", "weak-one", "pending-one"]);
+  });
+});
