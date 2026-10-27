@@ -1,5 +1,7 @@
+import type { SourceSettings } from "@/application/ports/integration-settings-reader-port";
 import type { Job } from "@/domain/job/job";
 import type { JobSearchCriteria } from "@/domain/search/search-profile";
+import { countryFromName, EUROPEAN_COUNTRIES } from "@/domain/shared/country";
 import { normalizeText } from "@/domain/shared/text";
 
 /**
@@ -157,4 +159,63 @@ function matchesLocation(job: Job, locations: string[]): boolean {
     if (wanted === "remote") return isRemoteJob;
     return jobParts.some((part) => part.includes(wanted));
   });
+}
+
+/**
+ * Per-provider geo gate from /integrations. Rules, in order:
+ * - empty selection → everything passes;
+ * - a known country must be in the selection ("Europe" accepts the European set);
+ * - a stored region (multi-country list, "Europe" scope) is matched per segment;
+ * - no country and no region (remote or unknown place) → keep: bias against
+ *   losing offers over geo data we could not infer.
+ */
+export function matchesAllowedCountries(job: Job, allowed: readonly string[]): boolean {
+  if (allowed.length === 0) return true;
+  const allowedKeys = allowed.map(normalizeText);
+  const wantsEurope = allowedKeys.includes("europe");
+  const location = job.location;
+  if (!location) return true;
+
+  if (location.country !== undefined && location.country !== "") {
+    const key = normalizeText(location.country);
+    if (allowedKeys.includes(key)) return true;
+    if (wantsEurope && EUROPEAN_COUNTRIES.has(key)) return true;
+    return false;
+  }
+
+  const region = location.region !== undefined ? normalizeText(location.region) : undefined;
+  if (region !== undefined && region !== "") {
+    // "Europe"/"EMEA" scope in the region means the job is open across Europe —
+    // keep it whenever the selection includes any European country (or the
+    // "Europe" pseudo-option), then try per-segment matches for the rest.
+    const allowsEuropean = allowedKeys.some(
+      (key) => key === "europe" || EUROPEAN_COUNTRIES.has(key),
+    );
+    if (allowsEuropean && /(europe|emea|european union)/.test(region)) return true;
+    const segments = region
+      .split(/[,;·|/–—-]+/)
+      .map((segment) => segment.trim())
+      .filter((segment) => segment !== "");
+    for (const segment of segments) {
+      const canonical = countryFromName(segment);
+      const key = canonical !== undefined ? normalizeText(canonical) : segment;
+      if (allowedKeys.includes(key)) return true;
+    }
+    return false;
+  }
+
+  return true;
+}
+
+/** Provider settings on top of the common filters: countries + per-run cap. */
+export function applyIntegrationSettings(jobs: Job[], settings: SourceSettings | undefined): Job[] {
+  if (!settings) return jobs;
+  let result = jobs;
+  if (settings.countries.length > 0) {
+    result = result.filter((job) => matchesAllowedCountries(job, settings.countries));
+  }
+  if (settings.maxItems !== undefined && settings.maxItems > 0) {
+    result = result.slice(0, settings.maxItems);
+  }
+  return result;
 }

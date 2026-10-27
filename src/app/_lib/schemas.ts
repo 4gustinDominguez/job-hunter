@@ -6,7 +6,8 @@ import {
   skillItemSchema,
 } from "@/application/profile/profile-schemas";
 import type { SaveProfileInput } from "@/application/profile/save-profile";
-import { EMPLOYMENT_TYPES, SENIORITIES } from "@/domain/job/enums";
+import { MANAGED_JOB_SOURCES, EMPLOYMENT_TYPES, SENIORITIES } from "@/domain/job/enums";
+import { COUNTRY_OPTIONS } from "@/domain/shared/country";
 import { REMOTE_PREFERENCES } from "@/domain/shared/remote-preference";
 
 const csv = (value: string): string[] =>
@@ -107,4 +108,21 @@ export interface ImportCvState {
 export interface DocumentActionState {
   message: string;
   error?: boolean;
+}
+
+export const integrationSettingsFormSchema = z.object({
+  provider: z.enum(MANAGED_JOB_SOURCES),
+  enabled: z.boolean(),
+  countries: z.array(z.enum(COUNTRY_OPTIONS)),
+  keywords: z.string().transform(csv),
+  maxItems: optionalNumber,
+  apiKey: z.string(),
+  clearKey: z.boolean(),
+});
+
+export type IntegrationSettingsFormValues = z.infer<typeof integrationSettingsFormSchema>;
+
+export interface IntegrationSettingsFormState {
+  errors: Record<string, string[] | undefined>;
+  message: string;
 }

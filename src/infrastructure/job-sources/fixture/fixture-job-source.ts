@@ -1,23 +1,28 @@
+import type { IntegrationSettingsReader } from "@/application/ports/integration-settings-reader-port";
 import type { JobSourcePort } from "@/application/ports/job-source-port";
 import type { Job } from "@/domain/job/job";
 import type { JobSearchCriteria } from "@/domain/search/search-profile";
 import { normalizeText } from "@/domain/shared/text";
+import { applyIntegrationSettings } from "../filters";
 import { FIXTURE_JOBS } from "./fixture-jobs";
 
 export class FixtureJobSource implements JobSourcePort {
   readonly type = "FIXTURE" as const;
 
+  constructor(private readonly readSettings?: IntegrationSettingsReader) {}
+
   async search(criteria: JobSearchCriteria): Promise<Job[]> {
+    const settings = this.readSettings ? await this.readSettings(this.type) : undefined;
+    if (settings && !settings.enabled) return [];
     const results: Job[] = [];
     for (const job of FIXTURE_JOBS) {
       if (matches(job, criteria)) {
         results.push({ ...job, discoveredAt: new Date() });
       }
     }
-    return results;
+    return applyIntegrationSettings(results, settings);
   }
 }
-
 function matches(job: Job, criteria: JobSearchCriteria): boolean {
   const haystack = normalizeText(`${job.title} ${job.description}`);
   const company = normalizeText(job.company.name);

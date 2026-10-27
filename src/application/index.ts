@@ -21,3 +21,5 @@ export * from "./profile/profile-schemas";
 export * from "./profile/save-profile";
 export * from "./search-profiles/delete-search-profile";
 export * from "./search-profiles/save-search-profile";
+export * from "./settings/create-integration-settings-reader";
+export * from "./settings/save-integration-settings";

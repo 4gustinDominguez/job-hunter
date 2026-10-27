@@ -1,7 +1,7 @@
 "use server";
 
 import { after } from "next/server";
-import { refresh } from "next/cache";
+import { revalidatePath, refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import type { SaveProfileInput } from "@/application";
 import {
@@ -25,6 +25,7 @@ import {
   ingestJobs,
   prefilterJobs,
   saveApplicationDocument,
+  saveIntegrationSettings,
   saveProfile,
   saveSearchProfile,
   searchProfileRepository,
@@ -35,12 +36,17 @@ import type {
   DocumentActionState,
   FetchJobsState,
   ImportCvState,
+  IntegrationSettingsFormState,
   ProfileFormState,
   ProfileFormValues,
   SearchProfileFormState,
   SearchProfileFormValues,
 } from "./schemas";
-import { profileFormSchema, searchProfileFormSchema } from "./schemas";
+import {
+  integrationSettingsFormSchema,
+  profileFormSchema,
+  searchProfileFormSchema,
+} from "./schemas";
 
 function criteriaFromProfile(profile: JobSearchProfile): JobSearchCriteria {
   return {
@@ -384,4 +390,46 @@ export async function deleteSearchProfileAction(formData: FormData): Promise<voi
   const id = String(formData.get("id") ?? "");
   await deleteSearchProfile.run(id);
   refresh();
+}
+
+export async function saveIntegrationSettingsAction(
+  _prevState: IntegrationSettingsFormState,
+  formData: FormData,
+): Promise<IntegrationSettingsFormState> {
+  await requireSession();
+  const raw = {
+    provider: String(formData.get("provider") ?? ""),
+    enabled: formData.get("enabled") === "on",
+    countries: formData
+      .getAll("countries")
+      .filter((value): value is string => typeof value === "string"),
+    keywords: String(formData.get("keywords") ?? ""),
+    maxItems: String(formData.get("maxItems") ?? ""),
+    apiKey: String(formData.get("apiKey") ?? ""),
+    clearKey: formData.get("clearKey") === "on",
+  };
+  const parsed = integrationSettingsFormSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { errors: parsed.error.flatten().fieldErrors, message: "" };
+  }
+  try {
+    const apiKey = raw.clearKey ? "" : raw.apiKey.trim() === "" ? undefined : raw.apiKey.trim();
+    await saveIntegrationSettings.run({
+      provider: parsed.data.provider,
+      enabled: parsed.data.enabled,
+      countries: parsed.data.countries,
+      keywords: parsed.data.keywords,
+      maxItems: parsed.data.maxItems,
+      apiKey,
+    });
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return { errors: { [error.field]: [error.message] }, message: "" };
+    }
+    // Never log the form data — it may contain an API key (PII/secret).
+    console.error("[integrations] save failed:", error);
+    throw error;
+  }
+  revalidatePath("/integrations");
+  return { errors: {}, message: "Saved — effective on the next fetch, no redeploy needed." };
 }

@@ -1,9 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { applyCommonFilters, isSoftwareRole } from "@/infrastructure/job-sources/filters";
+import {
+  applyCommonFilters,
+  applyIntegrationSettings,
+  isSoftwareRole,
+  matchesAllowedCountries,
+} from "@/infrastructure/job-sources/filters";
 import { makeJob } from "../../support/make-job";
 
 function role(title: string) {
   return makeJob({ title });
+}
+
+function atLocation(location?: {
+  city?: string;
+  region?: string;
+  country?: string;
+  isRemote: boolean;
+}) {
+  return makeJob({ location });
 }
 
 describe("isSoftwareRole", () => {
@@ -101,5 +115,83 @@ describe("applyCommonFilters", () => {
 
     const byCompany = applyCommonFilters(jobs, { keywords: [], excludedCompanies: ["Acme"] });
     expect(byCompany.map((job) => job.title)).toEqual(["Senior React Developer"]);
+  });
+});
+
+describe("matchesAllowedCountries", () => {
+  it("passes everything when no countries are selected", () => {
+    expect(matchesAllowedCountries(atLocation({ country: "Germany", isRemote: true }), [])).toBe(
+      true,
+    );
+  });
+
+  it("matches by exact country and keeps unknown-geo jobs", () => {
+    expect(
+      matchesAllowedCountries(atLocation({ country: "Spain", isRemote: false }), ["Spain"]),
+    ).toBe(true);
+    expect(
+      matchesAllowedCountries(atLocation({ country: "Germany", isRemote: true }), ["Spain"]),
+    ).toBe(false);
+    expect(
+      matchesAllowedCountries(atLocation({ city: "Someville", isRemote: false }), ["Spain"]),
+    ).toBe(true);
+    expect(matchesAllowedCountries(atLocation({ isRemote: true }), ["Spain"])).toBe(true);
+  });
+
+  it("honours the Europe pseudo-option and the European set", () => {
+    expect(
+      matchesAllowedCountries(atLocation({ country: "Germany", isRemote: true }), ["Europe"]),
+    ).toBe(true);
+    expect(
+      matchesAllowedCountries(atLocation({ country: "United States", isRemote: true }), ["Europe"]),
+    ).toBe(false);
+    expect(
+      matchesAllowedCountries(atLocation({ country: "Portugal", isRemote: true }), ["Spain"]),
+    ).toBe(false);
+  });
+
+  it("reads stored region scopes and multi-country lists", () => {
+    expect(
+      matchesAllowedCountries(atLocation({ region: "Europe", isRemote: true }), ["Spain"]),
+    ).toBe(true);
+    expect(matchesAllowedCountries(atLocation({ region: "EMEA", isRemote: true }), ["Spain"])).toBe(
+      true,
+    );
+    expect(
+      matchesAllowedCountries(
+        atLocation({ region: "Europe, USA, UK, Canada, Norway", isRemote: true }),
+        ["United Kingdom"],
+      ),
+    ).toBe(true);
+    expect(
+      matchesAllowedCountries(atLocation({ region: "USA, Canada", isRemote: true }), ["Spain"]),
+    ).toBe(false);
+  });
+});
+
+describe("applyIntegrationSettings", () => {
+  it("applies the country selection and the per-run cap", () => {
+    const jobs = [
+      makeJob({ title: "Backend Engineer", location: { country: "Spain", isRemote: false } }),
+      makeJob({ title: "Backend Engineer", location: { country: "Germany", isRemote: false } }),
+      makeJob({ title: "Backend Engineer", location: { country: "Spain", isRemote: false } }),
+    ];
+
+    const geo = applyIntegrationSettings(jobs, {
+      enabled: true,
+      countries: ["Spain"],
+      keywords: [],
+    });
+    expect(geo).toHaveLength(2);
+
+    const capped = applyIntegrationSettings(jobs, {
+      enabled: true,
+      countries: [],
+      keywords: [],
+      maxItems: 1,
+    });
+    expect(capped).toHaveLength(1);
+
+    expect(applyIntegrationSettings(jobs, undefined)).toHaveLength(3);
   });
 });

@@ -290,6 +290,75 @@ const REGION_SCOPE_PATTERN = /^(europe|eu|emea|european union|apac|asia pacific|
 
 const PLACE_SEPARATOR = /\s*(?:,|;|·|\||\/|–|—|-)\s*/;
 
+const EUROPEAN_COUNTRY_NAMES = [
+  "Germany",
+  "Spain",
+  "United Kingdom",
+  "Ireland",
+  "France",
+  "Netherlands",
+  "Portugal",
+  "Italy",
+  "Belgium",
+  "Switzerland",
+  "Austria",
+  "Sweden",
+  "Norway",
+  "Denmark",
+  "Finland",
+  "Poland",
+  "Czechia",
+  "Hungary",
+  "Romania",
+  "Bulgaria",
+  "Greece",
+  "Ukraine",
+  "Turkey",
+  "Estonia",
+  "Latvia",
+  "Lithuania",
+  "Slovakia",
+  "Slovenia",
+  "Croatia",
+  "Serbia",
+  "Iceland",
+  "Luxembourg",
+  "Malta",
+  "Cyprus",
+] as const;
+
+const NON_EUROPEAN_COUNTRY_NAMES = [
+  "United States",
+  "Canada",
+  "Australia",
+  "New Zealand",
+  "Israel",
+  "India",
+  "Singapore",
+  "Japan",
+  "China",
+  "Brazil",
+  "Mexico",
+  "Argentina",
+  "Colombia",
+  "Chile",
+  "South Korea",
+  "Hong Kong",
+  "United Arab Emirates",
+] as const;
+
+/** Normalized names — for membership tests against normalizeText'ed inputs. */
+export const EUROPEAN_COUNTRIES: ReadonlySet<string> = new Set(
+  EUROPEAN_COUNTRY_NAMES.map(normalizeText),
+);
+
+/** Picker options for /integrations (plus the "Europe" pseudo-entry). */
+export const COUNTRY_OPTIONS = [
+  "Europe",
+  ...EUROPEAN_COUNTRY_NAMES,
+  ...NON_EUROPEAN_COUNTRY_NAMES,
+] as const;
+
 /** Canonical country name when the text names a country (any alias), else undefined. */
 export function countryFromName(text: string): string | undefined {
   return COUNTRY_ALIASES[normalizeText(text)];

@@ -29,6 +29,13 @@
       "when": 1792646034700,
       "tag": "0003_tan_the_hand",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793114083982,
+      "tag": "0004_strange_firestar",
+      "breakpoints": true
     }
   ]
 }
