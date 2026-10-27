@@ -1,7 +1,8 @@
 import { ingestJobs, prefilterJobs } from "../src/app/_lib/container";
+import { envEnabledSources } from "../src/infrastructure/settings/env-defaults";
 
 async function main(): Promise<void> {
-  const enabled = process.env.JOB_SOURCES ?? "remotive,arbeitnow";
+  const enabled = [...envEnabledSources()].join(", ") || "(none)";
   console.log(`Fetching jobs from enabled sources (${enabled})…`);
 
   const result = await ingestJobs.run({ keywords: [] });
