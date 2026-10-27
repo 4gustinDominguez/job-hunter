@@ -98,7 +98,8 @@ export class DrizzleJobRepository implements JobRepositoryPort {
       .from(jobs)
       .innerJoin(companies, eq(jobs.companyId, companies.id))
       .where(and(...conditions))
-      .orderBy(desc(jobs.createdAt));
+      // id tiebreaker keeps pagination stable when createdAt collides
+      .orderBy(desc(jobs.createdAt), desc(jobs.id));
     return this.withFirstListings(rows);
   }
 

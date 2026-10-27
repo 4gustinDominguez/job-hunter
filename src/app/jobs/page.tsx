@@ -16,6 +16,8 @@ import {
 
 export const metadata: Metadata = { title: "Jobs" };
 
+const PAGE_SIZE = 50;
+
 function asEnumValue<T extends string>(value: unknown, allowed: readonly T[]): T | undefined {
   return typeof value === "string" && (allowed as readonly string[]).includes(value)
     ? (value as T)
@@ -103,12 +105,39 @@ export default async function JobsPage({
     sortByFit,
   );
 
+  // Paginate after all filters/sort: "N matching" is the filtered total, the
+  // page only changes which slice is rendered (2000+ rows froze the browser).
+  const total = jobs.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const rawPage = typeof sp.page === "string" ? Number.parseInt(sp.page, 10) : 1;
+  const page = Number.isFinite(rawPage) && rawPage > 0 ? Math.min(rawPage, totalPages) : 1;
+  const pageJobs = jobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Rebuild the current query for pagination links (form submits reset to page 1).
+  const pageHref = (target: number): `/jobs?${string}` | "/jobs" => {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (location) params.set("location", location);
+    if (remoteType) params.set("remote", remoteType);
+    if (employmentType) params.set("type", employmentType);
+    if (source) params.set("source", source);
+    if (fitValues.length > 0) params.set("fit", fitValues.join(","));
+    if (state) params.set("state", state);
+    if (sortByFit) params.set("sort", "fit");
+    if (target > 1) params.set("page", String(target));
+    const queryString = params.toString();
+    return queryString === "" ? "/jobs" : `/jobs?${queryString}`;
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-baseline justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Jobs</h1>
-          <p className="text-sm text-muted">{jobs.length} matching</p>
+          <p className="text-sm text-muted">
+            {jobs.length} matching
+            {totalPages > 1 ? ` · page ${page}/${totalPages}` : ""}
+          </p>
         </div>
         <Link href="/" className="text-sm font-medium text-accent-strong hover:underline">
           Fetch new jobs
@@ -278,7 +307,7 @@ export default async function JobsPage({
         </p>
       ) : (
         <ul className="divide-y divide-line rounded-lg border border-line bg-surface">
-          {jobs.map((job) => {
+          {pageJobs.map((job) => {
             const record = analyses.get(job.id);
             return (
               <li key={job.id}>
@@ -318,6 +347,33 @@ export default async function JobsPage({
           })}
         </ul>
       )}
+      {totalPages > 1 ? (
+        <nav aria-label="Pagination" className="flex items-center justify-between gap-4">
+          {page > 1 ? (
+            <Link
+              href={pageHref(page - 1)}
+              className="rounded-md border border-line px-3 py-1.5 text-sm hover:bg-paper"
+            >
+              ← Previous
+            </Link>
+          ) : (
+            <span className="px-3 py-1.5 text-sm text-muted opacity-50">← Previous</span>
+          )}
+          <span className="font-mono text-xs text-muted">
+            page {page} of {totalPages}
+          </span>
+          {page < totalPages ? (
+            <Link
+              href={pageHref(page + 1)}
+              className="rounded-md border border-line px-3 py-1.5 text-sm hover:bg-paper"
+            >
+              Next →
+            </Link>
+          ) : (
+            <span className="px-3 py-1.5 text-sm text-muted opacity-50">Next →</span>
+          )}
+        </nav>
+      ) : null}
     </div>
   );
 }
