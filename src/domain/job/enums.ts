@@ -12,10 +12,10 @@ export const JOB_SOURCE_TYPES = [
 export type JobSourceType = (typeof JOB_SOURCE_TYPES)[number];
 
 /** Sources manageable from /integrations (rows exist only for these). */
-export const MANAGED_JOB_SOURCES = ["FIXTURE", "REMOTIVE", "ARBEITNOW"] as const;
+export const MANAGED_JOB_SOURCES = ["FIXTURE", "REMOTIVE", "ARBEITNOW", "HIMALAYAS"] as const;
 
 /** Managed sources that take an API key (rendered with a key field in the UI). */
-export const SOURCES_WITH_API_KEY: readonly JobSourceType[] = [];
+export const SOURCES_WITH_API_KEY: readonly JobSourceType[] = ["HIMALAYAS"];
 
 export const REMOTE_TYPES = ["ONSITE", "REMOTE", "HYBRID"] as const;
 

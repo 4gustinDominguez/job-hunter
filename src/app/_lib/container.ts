@@ -32,6 +32,7 @@ import { createDocumentGenerator } from "@/infrastructure/ai/create-document-gen
 import { createJobMatcher } from "@/infrastructure/ai/create-job-matcher";
 import { ArbeitnowJobSource } from "@/infrastructure/job-sources/arbeitnow/arbeitnow-job-source";
 import { FixtureJobSource } from "@/infrastructure/job-sources/fixture/fixture-job-source";
+import { HimalayasJobSource } from "@/infrastructure/job-sources/himalayas/himalayas-job-source";
 import { RemotiveJobSource } from "@/infrastructure/job-sources/remotive/remotive-job-source";
 import { cipherFromEnv } from "@/infrastructure/security/secret-cipher";
 import { envDefaultSettings } from "@/infrastructure/settings/env-defaults";
@@ -69,6 +70,7 @@ function resolveJobSources(): JobSourcePort[] {
     new FixtureJobSource(integrationSettingsReader),
     new RemotiveJobSource(undefined, integrationSettingsReader),
     new ArbeitnowJobSource(undefined, integrationSettingsReader),
+    new HimalayasJobSource(undefined, integrationSettingsReader),
   ];
 }
 

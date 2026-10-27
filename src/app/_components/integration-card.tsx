@@ -87,7 +87,7 @@ export function IntegrationCard({ settings }: { settings: IntegrationCardSetting
             className={fieldClass}
           />
           <p className="text-[11px] text-muted">
-            Used when no search profile supplies keywords (Remotive only).
+            Used when no search profile supplies keywords (Remotive and Himalayas).
           </p>
         </div>
         <div className="flex flex-col gap-1">

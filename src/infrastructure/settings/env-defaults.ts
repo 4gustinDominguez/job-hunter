@@ -1,7 +1,7 @@
 import type { SourceSettings } from "@/application/ports/integration-settings-reader-port";
 import { JOB_SOURCE_TYPES, type JobSourceType } from "@/domain/job/enums";
 
-const DEFAULT_JOB_SOURCES = "remotive,arbeitnow";
+const DEFAULT_JOB_SOURCES = "remotive,arbeitnow,himalayas";
 
 /**
  * Env-derived defaults used when a provider has no settings row yet (and by
