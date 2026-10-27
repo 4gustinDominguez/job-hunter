@@ -20,7 +20,7 @@ describe("mapArbeitnowJob", () => {
       discoveredAt: DISCOVERED_AT,
     });
     expect(job.company.name).toBe("Nordmut GmbH");
-    expect(job.location).toEqual({ city: "Hamburg", isRemote: false });
+    expect(job.location).toEqual({ city: "Hamburg", country: "Germany", isRemote: false });
     expect(job.publishedAt?.getTime()).toBe(1792553449 * 1000);
     expect(job.description).toContain("Nordmut");
     expect(job.description).not.toContain("<p>");
@@ -33,7 +33,7 @@ describe("mapArbeitnowJob", () => {
     const job = mapArbeitnowJob(jobs()[1], DISCOVERED_AT);
 
     expect(job.remoteType).toBe("REMOTE");
-    expect(job.location).toEqual({ city: "Berlin", isRemote: true });
+    expect(job.location).toEqual({ city: "Berlin", country: "Germany", isRemote: true });
     expect(job.employmentType).toBe("FULL_TIME");
     expect(job.externalId).toBe("arbeitnow-senior-frontend-engineer-remote-berlin-52000");
   });

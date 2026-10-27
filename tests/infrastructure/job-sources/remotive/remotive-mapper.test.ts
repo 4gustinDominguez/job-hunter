@@ -24,7 +24,7 @@ describe("mapRemotiveJob", () => {
       discoveredAt: DISCOVERED_AT,
     });
     expect(job.company.name).toBe("Askable");
-    expect(job.location).toEqual({ country: "Worldwide", isRemote: true });
+    expect(job.location).toEqual({ isRemote: true });
     expect(job.publishedAt).toEqual(new Date("2026-10-17T16:04:29"));
     expect(job.description).toContain("AI coding tasks");
     expect(job.description).not.toContain("<p>");
@@ -36,7 +36,7 @@ describe("mapRemotiveJob", () => {
     const job = mapRemotiveJob(jobs()[1], DISCOVERED_AT);
 
     expect(job.employmentType).toBe("FULL_TIME");
-    expect(job.location?.country).toBe("Europe");
+    expect(job.location).toEqual({ region: "Europe", isRemote: true });
     expect(job.publishedAt).toEqual(new Date("2026-10-15T09:30:00"));
     expect(job.skills).toEqual(["TypeScript", "React", "Node.js"]);
     expect(jobs()[0].tags).toContain("Typescript ");

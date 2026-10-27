@@ -74,6 +74,44 @@ export class InMemoryJobRepository implements JobRepositoryPort {
     return [...this.canonical.values()].filter((job) => jobContentKey(job) === contentKey);
   }
 
+  async findJobIdsByCanonicalUrls(canonicalUrls: string[]): Promise<Map<string, string>> {
+    const wanted = new Set(canonicalUrls);
+    const result = new Map<string, string>();
+    for (const [jobId, listings] of this.listingsByJob) {
+      for (const listing of listings) {
+        const key = canonicalizeUrl(listing.url);
+        if (wanted.has(key) && !result.has(key)) result.set(key, jobId);
+      }
+    }
+    return result;
+  }
+
+  async findJobIdsByExternalIds(
+    source: JobSourceType,
+    externalIds: string[],
+  ): Promise<Map<string, string>> {
+    const wanted = new Set(externalIds);
+    const result = new Map<string, string>();
+    for (const [jobId, listings] of this.listingsByJob) {
+      for (const listing of listings) {
+        if (
+          listing.source === source &&
+          listing.externalId !== undefined &&
+          wanted.has(listing.externalId) &&
+          !result.has(listing.externalId)
+        ) {
+          result.set(listing.externalId, jobId);
+        }
+      }
+    }
+    return result;
+  }
+
+  async findByContentKeys(contentKeys: string[]): Promise<Job[]> {
+    const wanted = new Set(contentKeys);
+    return [...this.canonical.values()].filter((job) => wanted.has(jobContentKey(job)));
+  }
+
   async listListings(jobId: string): Promise<Job[]> {
     const canonical = this.canonical.get(jobId);
     const listings = this.listingsByJob.get(jobId);
@@ -96,6 +134,13 @@ export class InMemoryJobRepository implements JobRepositoryPort {
     this.canonical.set(job.id, job);
     this.listingsByJob.set(job.id, [{ ...job }]);
     return job;
+  }
+
+  async saveMany(entries: { job: Job; companyId: string }[]): Promise<void> {
+    for (const entry of entries) {
+      this.canonical.set(entry.job.id, entry.job);
+      this.listingsByJob.set(entry.job.id, [{ ...entry.job }]);
+    }
   }
 
   async attachListing(jobId: string, job: Job): Promise<void> {

@@ -115,6 +115,24 @@ describe("IngestJobs", () => {
     expect(await jobs.list()).toHaveLength(2);
   });
 
+  it("collapses identical urls arriving inside a single batch", async () => {
+    const first = makeJob({ url: "https://jobs.example/shared" });
+    const sameUrl = makeJob({
+      id: "same-url",
+      externalId: "same-url-ext",
+      url: "https://www.jobs.example/shared/?utm_source=feed",
+      title: "Backend Engineer",
+      company: { id: "c-other", name: "Other" },
+      location: { city: "Berlin", country: "Germany", isRemote: false },
+      description: "Kubernetes platform work with Terraform and Go services.",
+    });
+
+    const result = await ingest([first, sameUrl]);
+
+    expect(result).toEqual({ fetched: 2, created: 1, attached: 0, skipped: 1, errors: [] });
+    expect(await jobs.list()).toHaveLength(1);
+  });
+
   it("keeps genuinely different jobs apart", async () => {
     const first = makeJob();
     const second = makeJob({

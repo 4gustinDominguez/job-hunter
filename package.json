@@ -30,6 +30,7 @@
     "db:studio": "drizzle-kit studio",
     "fetch-jobs": "node --env-file=.env --import tsx scripts/fetch-jobs.ts",
     "analyze-jobs": "node --env-file=.env --import tsx scripts/analyze-jobs.ts",
+    "db:backfill": "node --env-file=.env --import tsx scripts/backfill-countries.ts",
     "auth:hash": "node --import tsx scripts/auth-hash.ts"
   },
   "dependencies": {

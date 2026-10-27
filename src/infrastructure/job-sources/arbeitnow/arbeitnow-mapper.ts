@@ -1,5 +1,6 @@
 import type { EmploymentType } from "@/domain/job/enums";
 import type { Job } from "@/domain/job/job";
+import { parseJobLocation } from "@/domain/shared/country";
 import { slugify } from "@/domain/shared/text";
 import { stripHtml } from "../strip-html";
 import type { ArbeitnowJob } from "./arbeitnow-client";
@@ -12,10 +13,7 @@ export function mapArbeitnowJob(api: ArbeitnowJob, discoveredAt = new Date()): J
     url: api.url,
     title: api.title,
     company: { id: slugify(api.company_name), name: api.company_name },
-    location: {
-      city: api.location?.trim() || undefined,
-      isRemote: api.remote === true,
-    },
+    location: parseJobLocation(api.location, api.remote === true),
     remoteType: api.remote === true ? "REMOTE" : "ONSITE",
     description: stripHtml(api.description ?? ""),
     employmentType: mapEmploymentType(api.job_types),

@@ -1,3 +1,4 @@
+/* oxlint-disable no-await-in-loop -- saveMany chunks insert sequentially by contract */
 import { and, asc, desc, eq, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
 import type { JobFilter } from "@/application/jobs/job-filter";
 import type { JobRepositoryPort } from "@/application/ports/job-repository-port";
@@ -132,6 +133,47 @@ export class DrizzleJobRepository implements JobRepositoryPort {
     return this.withFirstListings(rows);
   }
 
+  async findJobIdsByCanonicalUrls(canonicalUrls: string[]): Promise<Map<string, string>> {
+    const result = new Map<string, string>();
+    if (canonicalUrls.length === 0) return result;
+    const rows = await this.database
+      .select({ canonicalUrl: jobListings.canonicalUrl, jobId: jobListings.jobId })
+      .from(jobListings)
+      .where(inArray(jobListings.canonicalUrl, canonicalUrls));
+    for (const row of rows) {
+      if (!result.has(row.canonicalUrl)) result.set(row.canonicalUrl, row.jobId);
+    }
+    return result;
+  }
+
+  async findJobIdsByExternalIds(
+    source: JobSourceType,
+    externalIds: string[],
+  ): Promise<Map<string, string>> {
+    const result = new Map<string, string>();
+    if (externalIds.length === 0) return result;
+    const rows = await this.database
+      .select({ externalId: jobListings.externalId, jobId: jobListings.jobId })
+      .from(jobListings)
+      .where(and(eq(jobListings.source, source), inArray(jobListings.externalId, externalIds)));
+    for (const row of rows) {
+      if (row.externalId !== null && !result.has(row.externalId)) {
+        result.set(row.externalId, row.jobId);
+      }
+    }
+    return result;
+  }
+
+  async findByContentKeys(contentKeys: string[]): Promise<Job[]> {
+    if (contentKeys.length === 0) return [];
+    const rows = await this.database
+      .select({ job: jobs, company: companies })
+      .from(jobs)
+      .innerJoin(companies, eq(jobs.companyId, companies.id))
+      .where(inArray(jobs.contentKey, contentKeys));
+    return this.withFirstListings(rows);
+  }
+
   async listListings(jobId: string): Promise<Job[]> {
     const [row] = await this.database
       .select({ job: jobs, company: companies })
@@ -163,6 +205,37 @@ export class DrizzleJobRepository implements JobRepositoryPort {
     });
     await this.database.insert(jobListings).values(this.listingValues(job.id, job));
     return job;
+  }
+
+  /**
+   * Chunked bulk insert: ~4 round trips per 100 jobs instead of ~6 per job —
+   * a per-job flow spends minutes in Neon round trips at400 jobs/run and blows
+   * the 300s function limit. Jobs and their listing travel in the same
+   * transaction so a failed chunk leaves no orphaned rows.
+   */
+  async saveMany(entries: { job: Job; companyId: string }[]): Promise<void> {
+    if (entries.length === 0) return;
+    for (const chunk of chunked(entries, 100)) {
+      await this.database.transaction(async (tx) => {
+        await tx.insert(jobs).values(
+          chunk.map((entry) => ({
+            id: entry.job.id,
+            title: entry.job.title,
+            description: entry.job.description,
+            companyId: entry.companyId,
+            location: entry.job.location ?? null,
+            remoteType: entry.job.remoteType ?? null,
+            salary: entry.job.salary ?? null,
+            employmentType: entry.job.employmentType ?? null,
+            skills: entry.job.skills ?? null,
+            contentKey: jobContentKey(entry.job),
+          })),
+        );
+        await tx
+          .insert(jobListings)
+          .values(chunk.map((entry) => this.listingValues(entry.job.id, entry.job)));
+      });
+    }
   }
 
   async attachListing(jobId: string, job: Job): Promise<void> {
@@ -234,4 +307,12 @@ export class DrizzleJobRepository implements JobRepositoryPort {
     }
     return result;
   }
+}
+
+function chunked<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+  return chunks;
 }

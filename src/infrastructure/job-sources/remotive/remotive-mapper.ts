@@ -1,5 +1,6 @@
 import type { EmploymentType } from "@/domain/job/enums";
 import type { Job } from "@/domain/job/job";
+import { parseJobLocation } from "@/domain/shared/country";
 import { slugify } from "@/domain/shared/text";
 import { stripHtml } from "../strip-html";
 import type { RemotiveJob } from "./remotive-client";
@@ -13,7 +14,6 @@ const EMPLOYMENT_TYPES: Record<string, EmploymentType> = {
 };
 
 export function mapRemotiveJob(api: RemotiveJob, discoveredAt = new Date()): Job {
-  const requiredLocation = api.candidate_required_location?.trim() || undefined;
   const employmentType = EMPLOYMENT_TYPES[api.job_type?.trim().toLowerCase() ?? ""];
 
   return {
@@ -23,10 +23,10 @@ export function mapRemotiveJob(api: RemotiveJob, discoveredAt = new Date()): Job
     url: api.url,
     title: api.title,
     company: { id: slugify(api.company_name), name: api.company_name },
-    location: {
-      country: requiredLocation,
-      isRemote: true,
-    },
+    // Remote jobs carry a free-text scope ("Germany", "Europe, USA, UK…",
+    // "Worldwide") — parseJobLocation keeps what it can recognize and stores
+    // the rest verbatim as region so the display and dedupe keys stay intact.
+    location: parseJobLocation(api.candidate_required_location, true),
     remoteType: "REMOTE",
     description: stripHtml(api.description ?? ""),
     employmentType,
