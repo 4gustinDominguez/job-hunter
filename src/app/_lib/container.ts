@@ -23,6 +23,7 @@ import { DrizzleApplicationRepository } from "@/infrastructure/db/drizzle-applic
 import { DrizzleCandidateProfileRepository } from "@/infrastructure/db/drizzle-candidate-profile-repository";
 import { DrizzleCompanyRepository } from "@/infrastructure/db/drizzle-company-repository";
 import { DrizzleDocumentRepository } from "@/infrastructure/db/drizzle-document-repository";
+import { DrizzleIngestionRunRepository } from "@/infrastructure/db/drizzle-ingestion-run-repository";
 import { DrizzleIntegrationSettingsRepository } from "@/infrastructure/db/drizzle-integration-settings-repository";
 import { DrizzleJobRepository } from "@/infrastructure/db/drizzle-job-repository";
 import { DrizzleSearchProfileRepository } from "@/infrastructure/db/drizzle-search-profile-repository";
@@ -47,6 +48,7 @@ export const analysisRepository = new DrizzleAnalysisRepository(db);
 export const documentRepository = new DrizzleDocumentRepository(db);
 export const uploadedCvRepository = new DrizzleUploadedCvRepository(db);
 export const integrationSettingsRepository = new DrizzleIntegrationSettingsRepository(db);
+export const ingestionRunRepository = new DrizzleIngestionRunRepository(db);
 export const cvExtractor = createCvExtractor();
 export const jobMatcher = createJobMatcher();
 export const documentGenerator = createDocumentGenerator();

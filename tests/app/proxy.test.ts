@@ -5,9 +5,10 @@ import { createSessionToken } from "@/app/_lib/auth";
 const SECRET = "test-secret-at-least-32-characters-long!!";
 
 describe("proxy: isPublicPath", () => {
-  it("exposes /login and /api/cron (and their children), everything else needs auth", () => {
+  it("exposes /login, /api/cron and /api/health (and their children), everything else needs auth", () => {
     expect(isPublicPath("/login")).toBe(true);
     expect(isPublicPath("/api/cron/fetch-jobs")).toBe(true);
+    expect(isPublicPath("/api/health")).toBe(true);
 
     expect(isPublicPath("/")).toBe(false);
     expect(isPublicPath("/jobs")).toBe(false);

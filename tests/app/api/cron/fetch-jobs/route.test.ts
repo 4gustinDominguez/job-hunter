@@ -4,11 +4,14 @@ const ingestRunMock = vi.fn();
 const prefilterRunMock = vi.fn();
 const analyzeRunMock = vi.fn();
 const searchProfilesListMock = vi.fn();
+const ingestionStartMock = vi.fn();
+const ingestionFinishMock = vi.fn();
 vi.mock("@/app/_lib/container", () => ({
   ingestJobs: { run: ingestRunMock },
   prefilterJobs: { run: prefilterRunMock },
   analyzePendingJobs: { run: analyzeRunMock },
   searchProfileRepository: { list: searchProfilesListMock },
+  ingestionRunRepository: { start: ingestionStartMock, finish: ingestionFinishMock },
 }));
 
 const { GET } = await import("@/app/api/cron/fetch-jobs/route");
@@ -16,6 +19,8 @@ const { GET } = await import("@/app/api/cron/fetch-jobs/route");
 describe("cron fetch-jobs route", () => {
   beforeEach(() => {
     searchProfilesListMock.mockReset().mockResolvedValue([]);
+    ingestionStartMock.mockReset().mockResolvedValue("run-1");
+    ingestionFinishMock.mockReset().mockResolvedValue(undefined);
     ingestRunMock
       .mockReset()
       .mockResolvedValue({ fetched: 0, created: 0, attached: 0, skipped: 0, errors: [] });
@@ -72,6 +77,12 @@ describe("cron fetch-jobs route", () => {
     expect(ingestRunMock).toHaveBeenCalledWith({ keywords: [] });
     expect(prefilterRunMock).toHaveBeenCalledTimes(1);
     expect(analyzeRunMock).toHaveBeenCalledTimes(1);
+    // Phase 11: every run leaves a row for the dashboard's last-run line.
+    expect(ingestionStartMock).toHaveBeenCalledWith("cron");
+    expect(ingestionFinishMock).toHaveBeenCalledWith(
+      "run-1",
+      expect.objectContaining({ fetched: 0, created: 0, analyzed: 0, errors: [] }),
+    );
     const body = (await response.json()) as Record<string, unknown>;
     expect(body).toHaveProperty("ingest");
     expect(body).toHaveProperty("prefilter");

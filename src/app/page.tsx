@@ -11,10 +11,11 @@ import { FetchJobsForm } from "./_components/fetch-jobs-form";
 import {
   analysisRepository,
   applicationRepository,
+  ingestionRunRepository,
   listJobs,
   searchProfileRepository,
 } from "./_lib/container";
-import { formatDate, formatLocation, isToday } from "./_lib/format";
+import { formatDate, formatLocation, isOlderThan, isToday, timeAgo } from "./_lib/format";
 
 export const metadata: Metadata = { title: "Hunt" };
 
@@ -38,10 +39,11 @@ function publishedDate(job: { publishedAt?: Date; discoveredAt: Date }): Date {
 }
 
 export default async function HuntDashboardPage() {
-  const [jobs, applications, profiles] = await Promise.all([
+  const [jobs, applications, profiles, lastRun] = await Promise.all([
     listJobs.run(),
     applicationRepository.list(),
     searchProfileRepository.list(),
+    ingestionRunRepository.latest(),
   ]);
   const analyses = await analysisRepository.getMany(jobs.map((job) => job.id));
 
@@ -63,6 +65,22 @@ export default async function HuntDashboardPage() {
   for (const app of applications) {
     statusCounts.set(app.status, (statusCounts.get(app.status) ?? 0) + 1);
   }
+  // Phase 11 (cheap part): last-run health from ingestion_runs — no more
+  // digging through Vercel logs to know whether the 9:00 cron actually ran.
+  const STALE_AFTER_MS = 36 * 60 * 60 * 1000;
+  const lastRunUnfinished = lastRun !== null && lastRun.finishedAt === undefined;
+  const lastRunStale =
+    lastRun?.finishedAt !== undefined && isOlderThan(lastRun.finishedAt, STALE_AFTER_MS);
+  const lastRunParts =
+    lastRun !== null
+      ? [
+          `fetched ${lastRun.fetched}`,
+          `created ${lastRun.created}`,
+          ...(lastRun.analyzed > 0 ? [`analyzed ${lastRun.analyzed}`] : []),
+          ...(lastRun.failed > 0 ? [`failed ${lastRun.failed}`] : []),
+          ...(lastRun.errors.length > 0 ? [`${lastRun.errors.length} error(s)`] : []),
+        ]
+      : [];
 
   return (
     <div className="flex flex-col gap-8">
@@ -72,6 +90,22 @@ export default async function HuntDashboardPage() {
           <p className="text-sm text-muted">Fresh offers and your active pipeline.</p>
         </div>
         <FetchJobsForm profiles={profiles} />
+        {lastRun === null ? (
+          <p className="text-xs text-muted">
+            No runs recorded yet — the first fetch or the daily cron will show up here.
+          </p>
+        ) : lastRunUnfinished ? (
+          <p role="alert" className="text-xs text-danger">
+            ⚠ The {lastRun.kind} run started {timeAgo(lastRun.startedAt)} and never finished — it
+            likely crashed or hit a timeout.
+          </p>
+        ) : (
+          <p className={`text-xs ${lastRunStale ? "text-warn" : "text-muted"}`}>
+            Last run: {timeAgo(lastRun.finishedAt as Date)} ({lastRun.kind}) ·{" "}
+            {lastRunParts.join(" · ")}
+            {lastRunStale ? " · nothing since — check the cron" : ""}
+          </p>
+        )}
       </header>
 
       <section aria-label="Summary" className="grid grid-cols-1 gap-4 sm:grid-cols-4">

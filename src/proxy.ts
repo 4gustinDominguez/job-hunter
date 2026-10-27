@@ -12,7 +12,7 @@ import { jwtVerify } from "jose";
 const SESSION_COOKIE = "session";
 
 /** Paths reachable without a session. /api/cron authenticates via CRON_SECRET. */
-const PUBLIC_PREFIXES = ["/login", "/api/cron"];
+const PUBLIC_PREFIXES = ["/login", "/api/cron", "/api/health"];
 
 export function isPublicPath(pathname: string): boolean {
   return PUBLIC_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));

@@ -41,3 +41,8 @@ export type EmploymentType = (typeof EMPLOYMENT_TYPES)[number];
 export const SENIORITIES = ["JUNIOR", "MID", "SENIOR", "LEAD", "PRINCIPAL"] as const;
 
 export type Seniority = (typeof SENIORITIES)[number];
+
+/** Who triggered an ingestion run: the daily cron or the UI fetch button. */
+export const INGESTION_RUN_KINDS = ["cron", "manual"] as const;
+
+export type IngestionRunKind = (typeof INGESTION_RUN_KINDS)[number];

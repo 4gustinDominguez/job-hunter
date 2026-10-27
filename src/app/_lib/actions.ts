@@ -9,6 +9,7 @@ import {
   DocumentGenerationError,
   NotFoundError,
   ValidationError,
+  recordIngestionRun,
 } from "@/application";
 import { requireSession } from "./auth";
 import { criteriaFromProfile } from "./search-criteria";
@@ -24,6 +25,7 @@ import {
   deleteSearchProfile,
   generateApplicationDocument,
   ingestJobs,
+  ingestionRunRepository,
   prefilterJobs,
   saveApplicationDocument,
   saveIntegrationSettings,
@@ -134,17 +136,33 @@ export async function fetchJobsAction(
   }
   // Sources take tens of seconds — run ingestion in the background so the form
   // returns immediately instead of freezing the page until it all completes
-  // (user feedback 2026-10-23).
+  // (user feedback 2026-10-23). recordIngestionRun (phase 11) leaves a row so
+  // the dashboard can show "last run" without opening Vercel logs.
   after(async () => {
     try {
-      const result = await ingestJobs.run(criteria);
-      const prefilter = await prefilterJobs.run();
-      console.log(
-        `[fetch-jobs] done: fetched ${result.fetched} · created ${result.created} · attached ${result.attached} · skipped ${result.skipped} · prefilter queued ${prefilter.pending} (skipped ${prefilter.skipped})`,
-      );
-      for (const error of result.errors) {
-        console.error(`[fetch-jobs] source error — ${error.source}: ${error.message}`);
-      }
+      await recordIngestionRun(ingestionRunRepository, "manual", async () => {
+        const result = await ingestJobs.run(criteria);
+        const prefilter = await prefilterJobs.run();
+        console.log(
+          `[fetch-jobs] done: fetched ${result.fetched} · created ${result.created} · attached ${result.attached} · skipped ${result.skipped} · prefilter queued ${prefilter.pending} (skipped ${prefilter.skipped})`,
+        );
+        for (const error of result.errors) {
+          console.error(`[fetch-jobs] source error — ${error.source}: ${error.message}`);
+        }
+        return {
+          fetched: result.fetched,
+          created: result.created,
+          attached: result.attached,
+          skipped: result.skipped,
+          prefilterQueued: prefilter.pending,
+          prefilterSkipped: prefilter.skipped,
+          errors: result.errors.map((error) => ({
+            stage: "ingest" as const,
+            source: error.source,
+            message: error.message,
+          })),
+        };
+      });
     } catch (error) {
       console.error("[fetch-jobs] background ingestion failed:", error);
     }

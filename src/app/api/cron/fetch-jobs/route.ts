@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { recordIngestionRun } from "@/application";
 import type { JobSearchCriteria } from "@/domain/search/search-profile";
 import {
   analyzePendingJobs,
+  ingestionRunRepository,
   ingestJobs,
   prefilterJobs,
   searchProfileRepository,
@@ -22,19 +24,68 @@ export async function GET(request: Request) {
     ? criteriaFromProfile(activeProfile)
     : { keywords: [] };
   const profileLabel = activeProfile ? activeProfile.name : "none";
-  const ingest = await ingestJobs.run(criteria);
-  const prefilter = await prefilterJobs.run();
-  const analysis = await analyzePendingJobs.run();
+
+  // recordIngestionRun leaves a row per attempt (phase 11): the dashboard's
+  // "last run" line reads it instead of the user digging through Vercel logs.
+  const summary = await recordIngestionRun(ingestionRunRepository, "cron", async () => {
+    const ingest = await ingestJobs.run(criteria);
+    const prefilter = await prefilterJobs.run();
+    const analysis = await analyzePendingJobs.run();
+    for (const error of ingest.errors) {
+      console.error(`[cron] ingest error — ${error.source}: ${error.message}`);
+    }
+    for (const error of analysis.errors) {
+      console.error(`[cron] analysis error — ${error.title}: ${error.message}`);
+    }
+    return {
+      fetched: ingest.fetched,
+      created: ingest.created,
+      attached: ingest.attached,
+      skipped: ingest.skipped,
+      prefilterQueued: prefilter.pending,
+      prefilterSkipped: prefilter.skipped,
+      analyzed: analysis.analyzed,
+      strong: analysis.strong,
+      potential: analysis.potential,
+      weak: analysis.weak,
+      none: analysis.none,
+      failed: analysis.failed,
+      errors: [
+        ...ingest.errors.map((error) => ({
+          stage: "ingest" as const,
+          source: error.source,
+          message: error.message,
+        })),
+        ...analysis.errors.map((error) => ({
+          stage: "analysis" as const,
+          message: `${error.title}: ${error.message}`,
+        })),
+      ],
+    };
+  });
+
   // One structured summary line per run — the only way to see cron health in
   // Vercel runtime logs at a glance (no PII: counts and error texts only).
   console.log(
-    `[cron] profile: ${profileLabel} · ingest: fetched ${ingest.fetched} · created ${ingest.created} · attached ${ingest.attached} · skipped ${ingest.skipped} · errors ${ingest.errors.length} | prefilter: queued ${prefilter.pending} · skipped ${prefilter.skipped} | analysis: analyzed ${analysis.analyzed} · strong ${analysis.strong} · potential ${analysis.potential} · weak ${analysis.weak} · none ${analysis.none} · failed ${analysis.failed}`,
+    `[cron] profile: ${profileLabel} · ingest: fetched ${summary.fetched} · created ${summary.created} · attached ${summary.attached} · skipped ${summary.skipped} · errors ${(summary.errors ?? []).filter((error) => error.stage === "ingest").length} | prefilter: queued ${summary.prefilterQueued ?? 0} · skipped ${summary.prefilterSkipped ?? 0} | analysis: analyzed ${summary.analyzed ?? 0} · strong ${summary.strong ?? 0} · potential ${summary.potential ?? 0} · weak ${summary.weak ?? 0} · none ${summary.none ?? 0} · failed ${summary.failed ?? 0}`,
   );
-  for (const error of ingest.errors) {
-    console.error(`[cron] ingest error — ${error.source}: ${error.message}`);
-  }
-  for (const error of analysis.errors) {
-    console.error(`[cron] analysis error — ${error.title}: ${error.message}`);
-  }
-  return NextResponse.json({ ingest, prefilter, analysis });
+  return NextResponse.json({
+    ingest: {
+      fetched: summary.fetched,
+      created: summary.created,
+      attached: summary.attached,
+      skipped: summary.skipped,
+      errors: (summary.errors ?? []).filter((error) => error.stage === "ingest"),
+    },
+    prefilter: { queued: summary.prefilterQueued ?? 0, skipped: summary.prefilterSkipped ?? 0 },
+    analysis: {
+      analyzed: summary.analyzed ?? 0,
+      strong: summary.strong ?? 0,
+      potential: summary.potential ?? 0,
+      weak: summary.weak ?? 0,
+      none: summary.none ?? 0,
+      failed: summary.failed ?? 0,
+      errors: (summary.errors ?? []).filter((error) => error.stage === "analysis"),
+    },
+  });
 }

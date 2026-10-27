@@ -23,3 +23,4 @@ export * from "./search-profiles/delete-search-profile";
 export * from "./search-profiles/save-search-profile";
 export * from "./settings/create-integration-settings-reader";
 export * from "./settings/save-integration-settings";
+export * from "./ingestion/record-ingestion-run";
