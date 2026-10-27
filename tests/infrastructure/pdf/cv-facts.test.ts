@@ -87,6 +87,43 @@ Company`);
 
     expect(facts).toEqual({ email: undefined, phone: undefined, name: undefined, skillNames: [] });
   });
+
+  it("captures the whole summary section verbatim, joining PDF line-wraps", () => {
+    const facts = extractCvFacts(`ABOUT ME
+Senior Software Engineer | Full-Stack · React · Next.js
+Senior Full-Stack Developer with 10+ years of experience building web applications, with
+strong expertise in React, Next.js, TypeScript, Node.js and PHP. Currently focused on
+modern frontend architectures while bringing extensive previous experience in backend.
+
+Based in Spain, open to remote opportunities internationally.
+WORK EXPERIENCE
+Acme Corp`);
+    expect(facts.summary).toBe(
+      "Senior Software Engineer | Full-Stack · React · Next.js Senior Full-Stack Developer with 10+ years of experience building web applications, with strong expertise in React, Next.js, TypeScript, Node.js and PHP. Currently focused on modern frontend architectures while bringing extensive previous experience in backend. Based in Spain, open to remote opportunities internationally.",
+    );
+    expect(facts.headline).toBe("Senior Software Engineer | Full-Stack · React · Next.js");
+  });
+
+  it("does not treat plain prose as a headline and stops at a contact line", () => {
+    const plain = extractCvFacts(`SUMMARY
+Full stack developer with 8 years building SaaS products.
+
+EXPERIENCE
+Acme`);
+    expect(plain.summary).toBe("Full stack developer with 8 years building SaaS products.");
+    expect(plain.headline).toBeUndefined();
+
+    const withContact = extractCvFacts(`PROFILE
+Backend engineer specialised in payments.
+Job preferences: Remote roles in fintech.
+EXPERIENCE
+Acme`);
+    expect(withContact.summary).toBe("Backend engineer specialised in payments.");
+  });
+
+  it("keeps the opening parenthesis of parenthesised phones", () => {
+    expect(extractCvFacts("Phone: (+34) 666165486").phone).toBe("(+34) 666165486");
+  });
 });
 
 describe("buildFactsBlock", () => {
@@ -97,5 +134,19 @@ describe("buildFactsBlock", () => {
     expect(block).toContain("TypeScript, React");
     expect(block).not.toContain("Name:");
     expect(block).not.toContain("Phone:");
+    expect(block).not.toContain("Summary:");
+  });
+
+  it("renders summary and headline with the verbatim-copy instruction", () => {
+    const block = buildFactsBlock({
+      summary: "Senior Full-Stack Developer with 10+ years of experience. Based in Spain.",
+      headline: "Senior Software Engineer | Full-Stack",
+      skillNames: [],
+    });
+
+    expect(block).toContain("Summary (copy VERBATIM");
+    expect(block).toContain("Based in Spain.");
+    expect(block).toContain("Headline");
+    expect(block).toContain("Senior Software Engineer | Full-Stack");
   });
 });

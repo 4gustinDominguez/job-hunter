@@ -30,13 +30,14 @@ Rules:
 - Use ONLY facts explicitly present in the CV. Never invent employers, dates, metrics, skills or contact details.
 - When an EXTRACTED FACTS block is provided: copy name/email/phone VERBATIM from it (do not retype or alter them) and categorize EVERY entry of its skills list (keep the original skill names). You may add skills that appear in the CV but not in the list.
 - Keep free-text fields (summary, descriptions, achievements) in the CV's original language.
+- summary: keep the CV's summary/about section COMPLETE — every sentence (positioning, focus, seniority, availability), never compressed to a single sentence. When EXTRACTED FACTS includes a Summary, copy it VERBATIM (fixing only PDF line-wrapping).
 - Partial dates become the first day of the period ("2022-03" → "2022-03-01", "2019" → "2019-01-01").
 - For endDate use the last day of the stated period ("2022" → "2022-12-31"); omit endDate only when the CV says present or current.
 - Never write null: omit unknown optional keys entirely.
 - skills must include EVERY skill listed in the CV — never return an empty skills array unless the CV has no skills at all. skills[].level is REQUIRED for every skill: use the level stated in the CV; when no level is stated, write "INTERMEDIATE". Never omit level.
-- preferences: desiredRoles from recent job titles; remotePreference "ANY" unless the CV states one; employmentTypes ["FULL_TIME"] unless stated otherwise; include salaryExpectation only if the CV states a salary.
+- preferences: desiredRoles = 1-3 SHORT job titles for the candidate's CURRENT positioning (seniority kept as written). When both exist and are distinct, include the Headline title (the part before the first "|") AND the summary's opening title phrase — e.g. headline "Senior Software Engineer | Full-Stack…" + summary "Senior Full-Stack Developer with…" → ["Senior Software Engineer", "Senior Full-Stack Developer"]. Never copy a whole headline, stack list or comma-joined phrases into one role, and never split one title into two; do not prefer older job-preference or past job-title lists when a summary positioning exists; remotePreference "ANY" unless the CV states one; employmentTypes ["FULL_TIME"] unless stated otherwise; include salaryExpectation only if the CV states a salary.
 - Omit unknown optional fields and use [] for arrays with no relevant content.
-- Keep output compact: write field values concisely (short phrases, not paragraphs), never repeat keys or content, and do not add commentary outside the JSON.
+- Keep output compact: field values concise (short phrases, not paragraphs) — EXCEPT summary, which must be complete per its rule; never repeat keys or content, and do not add commentary outside the JSON.
 
 Abbreviated example: {"name":"…","email":"…","experience":[{"company":"…","position":"…","startDate":"2022-01-01"}],"skills":[{"name":"…","category":"PROGRAMMING","level":"EXPERT"}],"projects":[],"education":[{"institution":"…","degree":"…","field":"…","startDate":"2015-09-01"}],"preferences":{"remotePreference":"ANY"}}`;
 }
@@ -45,11 +46,12 @@ function toSaveProfileInput(draft: ProfileDraft, facts: CvFacts): SaveProfileInp
   const location = draft.location;
   const hasLocation = Boolean(location?.city || location?.region || location?.country);
   return {
-    // Deterministic merge: facts always win over the model for contact fields.
+    // Deterministic merge: facts always win over the model for contact fields
+    // and for the summary (the model reliably shortens it to one sentence).
     name: facts.name ?? draft.name,
     email: facts.email ?? draft.email,
     phone: facts.phone ?? (draft.phone || undefined),
-    summary: draft.summary || undefined,
+    summary: facts.summary || draft.summary || undefined,
     location:
       hasLocation && location
         ? {

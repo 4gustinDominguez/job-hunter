@@ -211,6 +211,31 @@ describe("LlmCvExtractor", () => {
     expect(draft.phone).toBe("+34 600 111 222");
   });
 
+  it("facts summary wins when the model shortens it to one sentence", async () => {
+    const cv = `ABOUT ME
+Senior Software Engineer | Full-Stack · React
+Senior Full-Stack Developer with 10+ years of experience building web applications.
+Currently focused on modern frontend architectures while bringing backend experience.
+Based in Spain, open to remote opportunities internationally.
+WORK EXPERIENCE
+Nimbus`;
+    const shortSummary = JSON.stringify({
+      ...JSON.parse(DRAFT_JSON),
+      summary:
+        "Senior Full-Stack Developer with 10+ years of experience building web applications.",
+    });
+    const chat = new FakeChat([shortSummary]);
+
+    const draft = await extractorWith(chat, async () => cv).extract(new Uint8Array([1]));
+
+    expect(draft.summary).toBe(
+      "Senior Software Engineer | Full-Stack · React Senior Full-Stack Developer with 10+ years of experience building web applications. Currently focused on modern frontend architectures while bringing backend experience. Based in Spain, open to remote opportunities internationally.",
+    );
+    const prompt = chat.turns[0]?.[1]?.content ?? "";
+    expect(prompt).toContain("copy VERBATIM as the profile summary");
+    expect(prompt).toContain("desiredRoles follow this");
+  });
+
   it("falls back to the model's contact fields when the CV has no facts", async () => {
     const cv = "A prose CV with no first-line name and no contact details at all.";
     const chat = new FakeChat([DRAFT_JSON]);

@@ -2,11 +2,15 @@ export interface CvFacts {
   email?: string;
   phone?: string;
   name?: string;
+  /** Full summary/about section, captured verbatim (the model shortens it otherwise). */
+  summary?: string;
+  /** First summary line when it is a "Title | Stack · Stack" style headline. */
+  headline?: string;
   skillNames: string[];
 }
 
 const EMAIL_REGEX = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
-const PHONE_CANDIDATE_REGEX = /\+?[\d\s().-]{8,}\d/g;
+const PHONE_CANDIDATE_REGEX = /\(?\+?[\d\s().-]{8,}\d/g;
 const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const MIN_PHONE_DIGITS = 9;
 const MAX_PHONE_DIGITS = 15;
@@ -22,16 +26,28 @@ const SECTION_HEADING_REGEX =
 
 const SKILL_MAX_LINES = 40;
 
+const SUMMARY_HEADING_REGEX =
+  /^\s*(?:\d+[\s.)]+)?\s*(?:professional\s+|career\s+|personal\s+|candidate\s+)?(?:summary|profile|about(?:\s+me)?|presentation|overview|elevator\s+pitch)\s*:?\s*$/i;
+
+const SUMMARY_CONTACT_LINE_REGEX =
+  /^(?:phone|tel(?:ephone)?|e?-?mail|address|linkedin|github|portfolio|website|job\s+preferences?|desired\s+(?:roles|positions))\s*[:|]/i;
+
+const SUMMARY_MAX_LINES = 16;
+const SUMMARY_MAX_CHARS = 1600;
+
 /**
  * Deterministic pre-pass over CV text: verifiable facts (contact, name,
  * skills list) extracted with regex only — zero LLM. The model then judges
  * (categories, levels, dates); for contact fields these facts always win.
  */
 export function extractCvFacts(text: string): CvFacts {
+  const summary = extractSummarySection(text);
   return {
     email: extractEmail(text),
     phone: extractPhone(text),
     name: extractName(text),
+    summary: summary.summary,
+    headline: summary.headline,
     skillNames: extractSkillNames(text),
   };
 }
@@ -41,12 +57,59 @@ export function buildFactsBlock(facts: CvFacts): string {
   if (facts.name) lines.push(`- Name: ${facts.name}`);
   if (facts.email) lines.push(`- Email: ${facts.email}`);
   if (facts.phone) lines.push(`- Phone: ${facts.phone}`);
+  if (facts.summary) {
+    lines.push(
+      `- Summary (copy VERBATIM as the profile summary — complete, never shorten to one sentence): ${facts.summary}`,
+    );
+  }
+  if (facts.headline) {
+    lines.push(
+      `- Headline (candidate's positioning — desiredRoles follow this): ${facts.headline}`,
+    );
+  }
   if (facts.skillNames.length > 0) {
     lines.push(
       `- Skills list (categorize EVERY entry with category and level, keep the original names): ${facts.skillNames.join(", ")}`,
     );
   }
   return lines.join("\n");
+}
+
+/**
+ * Capture the summary/about section verbatim: from its heading to the next
+ * known section heading, contact line, or size cap. Lines are hard-wrapped in
+ * PDFs, so join with single spaces (PDF line-wrapping is the only "fix" allowed).
+ */
+function extractSummarySection(text: string): { summary?: string; headline?: string } {
+  const lines = text.split(/\r?\n/);
+  let started = false;
+  const collected: string[] = [];
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!started) {
+      if (SUMMARY_HEADING_REGEX.test(line)) started = true;
+      continue;
+    }
+    if (line === "") continue;
+    if (
+      SECTION_HEADING_REGEX.test(line) ||
+      SKILLS_HEADING_REGEX.test(line) ||
+      SUMMARY_CONTACT_LINE_REGEX.test(line)
+    ) {
+      break;
+    }
+    collected.push(line);
+    if (collected.length >= SUMMARY_MAX_LINES) break;
+  }
+  const joined = collected.join(" ").replace(/\s+/g, " ").trim();
+  if (joined === "") return {};
+  const summary =
+    joined.length > SUMMARY_MAX_CHARS
+      ? `${joined.slice(0, SUMMARY_MAX_CHARS).trimEnd()} …`
+      : joined;
+  const firstLine = collected[0] ?? "";
+  const headline = /[|·]/.test(firstLine) ? firstLine : undefined;
+  return { summary, headline };
 }
 
 function extractEmail(text: string): string | undefined {
