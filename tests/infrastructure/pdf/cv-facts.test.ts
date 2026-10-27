@@ -124,6 +124,31 @@ Acme`);
   it("keeps the opening parenthesis of parenthesised phones", () => {
     expect(extractCvFacts("Phone: (+34) 666165486").phone).toBe("(+34) 666165486");
   });
+
+  it("re-joins skill names hard-wrapped mid-word by the PDF", () => {
+    const facts = extractCvFacts(`SKILLS
+JavaScript | Nextjs SSR / SSG | CSS (Styled Components) | Ja
+vaScript ES6+ / Jquery / React
+Backend
+Node.js (Express) | PHP (Symfony, Laravel)
+(Sass/Less)`);
+    expect(facts.skillNames).toContain("JavaScript ES6+");
+    expect(facts.skillNames).not.toContain("Ja");
+    expect(facts.skillNames).not.toContain("vaScript ES6+");
+    expect(facts.skillNames).toContain("Jquery");
+    expect(facts.skillNames).toContain("Sass");
+    expect(facts.skillNames).toContain("Less");
+    expect(facts.skillNames).not.toContain("(Sass");
+    expect(facts.skillNames).not.toContain("Less)");
+  });
+
+  it("does not glue lines that start a new item or an uppercase token", () => {
+    const facts = extractCvFacts(`SKILLS
+React | Vue
+Angular
+Svelte`);
+    expect(facts.skillNames).toEqual(["React", "Vue", "Angular", "Svelte"]);
+  });
 });
 
 describe("buildFactsBlock", () => {

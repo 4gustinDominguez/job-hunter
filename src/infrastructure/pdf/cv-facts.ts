@@ -148,8 +148,7 @@ function extractName(text: string): string | undefined {
 
 function extractSkillNames(text: string): string[] {
   const lines = text.split(/\r?\n/);
-  const names: string[] = [];
-  const seen = new Set<string>();
+  const section: string[] = [];
   let inSection = false;
   let scanned = 0;
 
@@ -165,8 +164,13 @@ function extractSkillNames(text: string): string[] {
     if (SECTION_HEADING_REGEX.test(trimmed) || SKILLS_HEADING_REGEX.test(trimmed)) break;
     scanned += 1;
     if (scanned > SKILL_MAX_LINES) break;
+    section.push(trimmed);
+  }
 
-    for (const raw of splitSkillLine(trimmed)) {
+  const names: string[] = [];
+  const seen = new Set<string>();
+  for (const logicalLine of joinWrappedLines(section)) {
+    for (const raw of splitSkillLine(logicalLine)) {
       const name = cleanSkillName(raw);
       const key = name.toLowerCase();
       if (name.length >= 2 && name.length <= 40 && !seen.has(key)) {
@@ -178,6 +182,29 @@ function extractSkillNames(text: string): string[] {
   return names;
 }
 
+/**
+ * PDFs hard-wrap long list lines mid-word ("… | Ja" / "vaScript ES6+ / …"),
+ * which would otherwise produce broken skill names. Re-join a line with the
+ * next when it ends in a letter/digit and the next starts lowercase (a fresh
+ * item would start after a separator or uppercase).
+ */
+function joinWrappedLines(lines: readonly string[]): string[] {
+  const joined: string[] = [];
+  for (let index = 0; index < lines.length; index++) {
+    let current = lines[index];
+    while (
+      index + 1 < lines.length &&
+      /[0-9\p{L}]$/u.test(current) &&
+      /^\p{Ll}/u.test(lines[index + 1])
+    ) {
+      current += lines[index + 1];
+      index += 1;
+    }
+    joined.push(current);
+  }
+  return joined;
+}
+
 function splitSkillLine(line: string): string[] {
   return line
     .replace(/^[•\-*–●▪]+\s*/, "")
@@ -187,12 +214,17 @@ function splitSkillLine(line: string): string[] {
 }
 
 function cleanSkillName(value: string): string {
-  return value
-    .replace(/\([^)]*\)/g, " ")
-    .replace(
-      /\s*[—–-]\s*(?:beginner|intermediate|advanced|expert|basic|b[12]|c[12]|a[12]|junior|mid|senior|excellent|good|native|fluent).*$/i,
-      " ",
-    )
-    .replace(/\s+/g, " ")
-    .trim();
+  return (
+    value
+      .replace(/\([^)]*\)/g, " ")
+      // Wrap/split artifacts leave unbalanced parens ("(Sass" / "Less)") — drop
+      // the stray characters after balanced content was removed above.
+      .replace(/[()]/g, " ")
+      .replace(
+        /\s*[—–-]\s*(?:beginner|intermediate|advanced|expert|basic|b[12]|c[12]|a[12]|junior|mid|senior|excellent|good|native|fluent).*$/i,
+        " ",
+      )
+      .replace(/\s+/g, " ")
+      .trim()
+  );
 }
