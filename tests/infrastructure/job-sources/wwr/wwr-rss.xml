@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+<title>We Work Remotely: test fixture</title>
+<item>
+
+      <media:content url="https://wwr-pro.s3.amazonaws.com/logos/0171/5346/logo.gif" type="image/png"/>
+      <title>Ignition, Inc.: MSP Mac Help Desk Guru (work from home)</title>
+      <region>Anywhere in the World</region>
+      <country></country>
+      <state>California</state>
+      <skills>Technical Support, Sys Admin, Cyber Security, Windows/Linux/MacOS, and Endpoint Security</skills>
+      <category>DevOps and Sysadmin</category>
+      <type>Full-Time</type>
+      <description>&lt;img src="https://we-work-remotely.imgix.net/logos/0171/5346/logo.gif?ixlib=rails-4.0.0&amp;w=50&amp;h=50&amp;dpr=2&amp;fit=fill&amp;auto=compress" /&gt;
+
+&lt;p&gt;
+  &lt;strong&gt;Headquarters:&lt;/strong&gt; ignitionit.com
+    &lt;br /&gt;&lt;strong&gt;URL:&lt;/strong&gt; &lt;a href="https://ignitionit.com"&gt;https://ignitionit.com&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Fully Remote · Work from home · Full-time (Eastern or Pacific time zones) · Apple-first&amp;nbsp;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;TL;DR&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;ignitionit.com is a seasoned, Apple-first MSP — in business for almost 30 years — and we're hiring a Help Desk Technician to be the friendly, capable first voice our clients reach when something isn't working. This position is a remote, work-from-home, full-time role.&lt;/p&gt;
+&lt;p&gt;We've written this as a junior-to-mid-level job description because that's where most great people start on our team. But if you're more seasoned — comfortable in identity, MDM, or security work — don't scroll past. We'd be delighted to find someone who can step in higher up the ladder, and we'll happily talk about a more senior scope and comp if that's you.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;What the actual job???&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Unlike many IT shops, we believe that the technology is the tactic. The actual job is making people feel taken care of. One of our core values is “49% tech support, 51% human support.”&lt;/p&gt;
+&lt;p&gt;You'll succeed by configuring devices, resetting access, untangling email, and chasing down the gremlin that's been haunting someone's conference room. But you'll know you succeeded when a client exhales and says, “Thank goodness you're on it!” That Warm Fuzzy Feeling™ is the actual product. The green lights on the dashboard are just how we get there.&lt;/p&gt;
+&lt;p&gt;In a typical week, you might:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Onboard a new hire at a fast-growing startup: provision their Mac, set up their Google Workspace or Microsoft 365 accounts, enroll the device in MDM, and make sure day one feels effortless.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Offboard a departing employee cleanly — recover the laptop, revoke access, and close the loop so nothing's left dangling. All boxes checked, ticket notated and closed, client followed up with.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Field a "my email stopped working" ticket that turns out to be a DNS thing, a phishing-filter thing, or a "they changed their password on their phone three weeks ago" thing.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Help a family office or RIA get a touchy Zoom Room or conference-room AV setup behaving before a meeting — over the phone.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Triage the queue so phones get answered fast, emails don't rot, and nobody feels forgotten — even when the honest answer is, “We're on it, but here's the realistic timeline."&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;⠀ You'll be the front line: helping with what you can, researching what you can't, and pinging the rest of the team when you're genuinely stuck. That last part is a skill, not a weakness — knowing when to ask is half the job.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;About ignitionit.com&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;We're one of the oldest Apple Technical Partners on the planet, and one of the only certified Apple Premier Partners — that’s kinda like getting knighted by the ghost of Steve Jobs. We started where you’d expect to find Macs (creative agencies, non-profits, education) but our primary clients today are cutting-edge, venture-backed AI SaaS startups, VC and private equity firms, registered investment advisors — many of them operating under stringent compliance expectations (SOC 2, SEC). That means we hold ourselves to a higher standard than the scrappy shop we started as. Polished, reliable, security-minded work is the baseline now — but always with a smile!&lt;/p&gt;
+&lt;p&gt;What hasn't changed: relationships are still our most valuable currency — with clients, with vendors, and with each other. We're a tight, supportive team. We teach each other what we know, cover for each other when life throws a punch, and care a little too much about doing things the right way. We're still a bit weird, and our clients seem to like us that way.&lt;/p&gt;
+&lt;p&gt;We move fast, priorities shift, it’s not always documented (whatever it is), our tool set and list of supported platforms is sprawling, and some days the to-do list is longer than you'd like. If you can stay warm under pressure, create order out of chaos, learn new stuff fast because you love it, and speak up when you need help, you'll thrive here.&lt;/p&gt;
+&lt;p&gt;If you need a rigid, fully-documented, never-changes environment where nobody trusts you with admin access, where you will be micro-managed so you never have to wonder whether or not you’re doing the right thing, this isn't it. You’ll have a ton of independence on our team, and freedom to use your best judgment to get the ball over the finish line, but that also means we expect you to be naturally responsible, honest, and highly accountable — to yourself, your teammates, and the clients. As they say, the price of freedom is eternal vigilance.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The tech you'll work with (and grow into)&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Day one, you'll be living in:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Apple at the core — macOS, iOS, Apple Business Manager, and MDM (Jamf / Iru / Intune / Workspace ONE / and more)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Yes, PCs too — about one-third of our users are driving Windows&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Google Workspace and Microsoft 365 admin consoles&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Identity and access — SSO, MFA, and security keys (Okta, Entra ID, Yubikey, and friends)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Lots of other security tools — our stack is constantly evolving and may vary from client to client&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The everyday productivity stack — Slack, Zoom, conference-room AV, networking basics (Meraki), and endpoint tooling&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;⠀ You don't need to know all of this. You need to be the kind of person who wants to. As you grow, there's a clear path into infrastructure administration, project architecture and implementation, and — for the right person — security and compliance work (phishing simulations, endpoint detection, SOC 2 / CIS / SEC readiness, due diligence questionnaire support, etc.). That's where our most senior people live, and it's wide open.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Who we hope you are&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The hard requirements — we won't move forward unless you:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Can work standard business hours in Eastern or Pacific time zones (we currently need both)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Have a quiet home workspace and reliable broadband&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Have proven Apple aptitude — you actually use and like the Apple ecosystem&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Have at least 5 years of IT support experience on the job.&amp;nbsp;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;⠀ Everything else — and this is the longer list, on purpose. We figure technical skills are teachable; character takes a lot longer. So we're looking for someone who:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Genuinely cares — about clients, teammates, and doing right by people&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Loves to learn, and proves it in how they spend their time&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Reads, and writes clearly — clear writing is clear thinking, and you'll do a lot of it&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Stays calm and kind with a frustrated person on the other end of the line&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Can tell the difference between good customer service and fantastic customer service, and refuses to settle for the former&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Notices when something's being done inefficiently and fixes it (you may boast about it later, that’s fine)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Proofreads their own work (yes, we noticed whether you proofread your application)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Has a sense of humor, and doesn't take themselves too seriously&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Regarding AI&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Our company founder/CEO is headquartered in the Bay Area. We work with innovative, ambitious companies developing AI products. Our team members hold a range of opinions about whether AI is “good or bad” for humans, but at the end of the day, we embrace the plain fact that it is here, we must embrace it to evolve, and our clients increasingly depend on us to help them embrace it, too, to help them evolve and stay competitive.&lt;/p&gt;
+&lt;p&gt;Our CEO's opinion: AI will not replace human labor any time soon; rather, AI is a new opportunity to either (a) get things done faster, or (b) get a much higher quality of output than before. If you’re an AI tinkerer, great! We want to hear how you’re using it and see your latest vibe project. If you’re allergic to AI or have no interest in learning new habits to work effectively with it, this is not the place for you.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Compensation &amp;amp; logistics&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Base salary: &lt;strong&gt;Applicants outside the USA will be compensated according to your local employment market. &lt;/strong&gt;For applicants closer to the junior side who are located in the USA, $50,000–$65,000/yr, depending on experience level and your local geographical price index. With experience, comp goes up from there. Genuinely experienced, more senior candidates can be slotted higher — let's talk.&amp;nbsp;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Type &amp;amp; location: Full-time, work from home, fully remote. Eastern or Pacific time zones.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Benefits: Medical / dental / vision for the employee, 401(k) with employer contribution, 2 weeks of PTO annually to start, and a stipend for your home internet.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;How to apply&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The first step is really easy and only takes 10 minutes — no resume, no cover letter, no essays. Here's how:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Take&lt;a href="https://go.cultureindex.com/p/bLvP56CvGHU"&gt; this online Culture Index assessment &lt;/a&gt;(about 10 minutes): We use it to screen for people whose natural wiring fits how our team works.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;If your profile lines up with what we're looking for, we'll reach out and ask you to complete a 60-minute TestGorilla assessment for critical thinking skills, send us your resume, and maybe a couple of other items.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;From there, we conduct between 2-4 video interviews. One of these might be a live technical assessment.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;If the Culture Index step feels like a strange way to start a job application — that's kind of the point. Remember the phrase Think Different?&lt;/p&gt;
+&lt;p&gt;Ignition is an equal opportunity employer. We welcome and will consider all qualified applicants. Good luck in your search — and may the Force be with you!&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;To apply:&lt;/strong&gt; &lt;a href="https://weworkremotely.com/remote-jobs/ignition-inc-msp-mac-help-desk-guru-work-from-home"&gt;https://weworkremotely.com/remote-jobs/ignition-inc-msp-mac-help-desk-guru-work-from-home&lt;/a&gt;&lt;/p&gt;
+</description>
+      <pubDate>Tue, 27 Oct 2026 03:42:29 +0000</pubDate>
+      <expires_at>Thu, 26 Nov 2026 03:42:29 +0000</expires_at>
+      <guid>https://weworkremotely.com/remote-jobs/ignition-inc-msp-mac-help-desk-guru-work-from-home</guid>
+      <link>https://weworkremotely.com/remote-jobs/ignition-inc-msp-mac-help-desk-guru-work-from-home</link>
+    
+</item>
+<item>
+
+      <media:content url="https://wwr-pro.s3.amazonaws.com/logos/0144/3523/logo.gif" type="image/png"/>
+      <title>MapTiler:  Head of Design | Maps Platform (Remote in Europe)</title>
+      <region>Anywhere in the World</region>
+      <country>🇦🇩 Andorra, 🇦🇱 Albania, 🇦🇲 Armenia, 🇦🇹 Austria, 🇧🇦 Bosnia and Herzegovina, 🇧🇪 Belgium, 🇧🇬 Bulgaria, 🇧🇾 Belarus, 🇨🇭 Switzerland, 🇨🇾 Cyprus, 🇨🇿 Czechia, 🇩🇪 Germany, 🇩🇰 Denmark, 🇪🇪 Estonia, 🇪🇸 Spain, 🇫🇮 Finland, 🇫🇷 France, 🇬🇧 United Kingdom of Great Britain and Northern Ireland, 🇬🇪 Georgia, 🇬🇷 Greece, 🇭🇷 Croatia, 🇭🇺 Hungary, 🇮🇪 Ireland, 🇮🇸 Iceland, 🇮🇹 Italy, 🇱🇮 Liechtenstein, 🇱🇹 Lithuania, 🇱🇺 Luxembourg, 🇱🇻 Latvia, 🇲🇨 Monaco, 🇲🇩 Moldova (Republic of), 🇲🇪 Montenegro, 🇲🇰 North Macedonia, 🇲🇹 Malta, 🇳🇱 Netherlands, 🇳🇴 Norway, 🇵🇱 Poland, 🇵🇹 Portugal, 🇷🇴 Romania, 🇷🇸 Serbia, 🇸🇪 Sweden, 🇸🇮 Slovenia, 🇸🇰 Slovakia, 🇸🇲 San Marino, and 🇺🇦 Ukraine</country>
+      <state>Plzeňský kraj</state>
+      <skills>UI/UX Design, Artificial Intelligence (AI), and Team Management</skills>
+      <category>Design</category>
+      <type>Contract</type>
+      <description>&lt;img src="https://we-work-remotely.imgix.net/logos/0144/3523/logo.gif?ixlib=rails-4.0.0&amp;w=50&amp;h=50&amp;dpr=2&amp;fit=fill&amp;auto=compress" /&gt;
+
+&lt;p&gt;
+  &lt;strong&gt;Headquarters:&lt;/strong&gt; Zug, Switzerland
+    &lt;br /&gt;&lt;strong&gt;URL:&lt;/strong&gt; &lt;a href="https://www.maptiler.com/"&gt;https://www.maptiler.com/&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Full-time&amp;nbsp;&lt;/li&gt;
+&lt;li&gt;Freelance / B2B contract&amp;nbsp;&lt;/li&gt;
+&lt;li&gt;Remote in Europe&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Description&lt;/strong&gt;&lt;br&gt;&lt;br&gt;MapTiler is moving toward becoming an AI-accelerated company, and design is a part of that change. We are looking for a &lt;strong&gt;Head of Design&lt;/strong&gt; to lead the craft and the design practice across our products and customer experience, and help to define the new setup and processes for how designers should work. This is a completely new role at MapTiler!&lt;br&gt;&lt;br&gt;&lt;strong&gt;What you will do&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Lead the design team of 5 and make the people decisions that come with it: hiring, performance, wellbeing, career progression and education of designers.&lt;/li&gt;
+&lt;li&gt;Work closely with product managers, developers and marketing, and represent design in discussions with the executive team.&lt;/li&gt;
+&lt;li&gt;Measurably increase the user-centric mindset and UX maturity of the company: define how we measure it, report it to leadership and act on what you find.&lt;/li&gt;
+&lt;li&gt;Lead design's transition to an AI-accelerated way of working and help to decide how designers use AI in their daily practice, in line with the company's overall direction.&lt;/li&gt;
+&lt;li&gt;Own design craft, quality standards, and the coherence of the experience across all MapTiler products and services.&lt;/li&gt;
+&lt;li&gt;Own the design roadmap, which runs in parallel to the product and marketing roadmaps.&lt;/li&gt;
+&lt;li&gt;Make company-wide design decisions, set standards and quality, and speak up when they are not met.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;What we expect from you&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;At least 8 years of experience in UX, UI, or product design, including 3+ years in a design leadership role.&lt;/li&gt;
+&lt;li&gt;Experience building and leading a design team, including hiring, performance management, and career development.&lt;/li&gt;
+&lt;li&gt;Strong design craft, shown by a portfolio or a case study of projects you led, and the ability to set and defend quality standards.&lt;/li&gt;
+&lt;li&gt;Hands-on experience using AI tools in design work, and a well-argued view of where they help and where they do not.&lt;/li&gt;
+&lt;li&gt;Ability to align with or lead Developer Experience (DX), ensuring B2B / B2D products work effectively for both human users and AI agents.&lt;/li&gt;
+&lt;li&gt;The ability to explain design decisions with concrete arguments based on qualitative and quantitative user research.&lt;/li&gt;
+&lt;li&gt;The ability to influence and negotiate at the executive level.&lt;/li&gt;
+&lt;li&gt;An understanding that good design serves a deeper purpose than looking good.&lt;/li&gt;
+&lt;li&gt;A strong drive for self-improvement, learning, sharing knowledge, and trying new approaches.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Nice to have&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Interest in maps or cartography.&lt;/li&gt;
+&lt;li&gt;Knowledge of the GIS or map industry.&lt;/li&gt;
+&lt;li&gt;Experience with Agile methodology.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;What we offer&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Competitive financial compensation (€29 – €45 / hour) based on your experience &amp;amp; annual performance bonus.&lt;/li&gt;
+&lt;li&gt;Widescreen LCD, a laptop of your choice, and all the resources you need for your work.&amp;nbsp;&lt;/li&gt;
+&lt;li&gt;Flexible working hours to help you easily balance your personal and professional life.&lt;/li&gt;
+&lt;li&gt;Work remotely from anywhere in Czechia, or hang out with us at our hub in Brno.&lt;/li&gt;
+&lt;li&gt;Collaborate with the best from major &lt;a href="https://www.maptiler.com/industry/"&gt;global brands&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Grow your career with dedicated support for continuous learning, attending conferences, and building your personal brand.&lt;/li&gt;
+&lt;li&gt;A friendly, connected &lt;a href="https://www.maptiler.com/benefits/"&gt;team&lt;/a&gt; and regular team-building events across Europe.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;About MapTiler&lt;br&gt;&lt;/strong&gt;&lt;br&gt;We make maps easy so that everyone can understand the world better. Our platform powers everything from global weather forecasting and humanitarian crisis management to flight trackers and the Swiss railways. Our maps are viewed by hundreds of millions of people worldwide every month.&lt;br&gt;We are deeply rooted in the developer and open-source communities. Since our users and customers are primarily developers, engineers, and geo-experts, we don't only do traditional account management, we also build technical partnerships.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;To apply:&lt;/strong&gt; &lt;a href="https://weworkremotely.com/remote-jobs/maptiler-head-of-design-maps-platform-remote-in-europe"&gt;https://weworkremotely.com/remote-jobs/maptiler-head-of-design-maps-platform-remote-in-europe&lt;/a&gt;&lt;/p&gt;
+</description>
+      <pubDate>Mon, 26 Oct 2026 11:48:42 +0000</pubDate>
+      <expires_at>Wed, 25 Nov 2026 11:48:42 +0000</expires_at>
+      <guid>https://weworkremotely.com/remote-jobs/maptiler-head-of-design-maps-platform-remote-in-europe</guid>
+      <link>https://weworkremotely.com/remote-jobs/maptiler-head-of-design-maps-platform-remote-in-europe</link>
+    
+</item>
+<item>
+
+      <media:content url="https://wwr-pro.s3.amazonaws.com/logos/0171/6642/logo.gif" type="image/png"/>
+      <title>Replika: Lifecycle &amp; CRM Specialist</title>
+      <region>EMEA</region>
+      <country></country>
+      <state></state>
+      <skills>Adobe Photoshop, Analytics, Compliance, CRM, Cross-Browser Development, CRM Systems, Cross-Selling, Analytics Tools, CRM Integration, and Composition</skills>
+      <category>Customer Support</category>
+      <type>Full-Time</type>
+      <description>&lt;img src="https://we-work-remotely.imgix.net/logos/0171/6642/logo.gif?ixlib=rails-4.0.0&amp;w=50&amp;h=50&amp;dpr=2&amp;fit=fill&amp;auto=compress" /&gt;
+
+&lt;p&gt;
+  &lt;strong&gt;Headquarters:&lt;/strong&gt; Armenia Yerevan, EMEA, Armenia
+    &lt;br /&gt;&lt;strong&gt;URL:&lt;/strong&gt; &lt;a href="http://replika.com"&gt;http://replika.com&lt;/a&gt;
+&lt;/p&gt;
+
+
+&lt;div class="prose font-company-body mx-auto max-w-750 overflow-hidden wrap-break-word [&amp;amp;_ol_li_li]:list-[lower-alpha]"&gt;
+&lt;h3&gt;About Replika&lt;/h3&gt;&lt;p&gt;&lt;span&gt;In 2017, no one knew what AI was supposed to be. We built the world's first consumer AI app. Two million people showed up in two months. Today it's over 40 million, and the thing they keep telling us hasn't changed: it helped. It made their life better, steadier, a little less alone.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Most AI is built for tasks, not for people. It gives you answers, but it doesn't care what you do with them. AI doesn't just need intelligence. It needs intention. Because the real question isn't just what AI can do. It's what AI is for.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;When the world's leading researchers wanted to understand whether AI could actually change someone's life, they studied Replika, because there was nothing else to study. What they found at Stanford, at Harvard, across years of research, was that Replika doesn't replace human connection. It deepens it. People become more social, more confident, more themselves. Not in theory. In their actual lives.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Every major AI company talks about their mission for humanity. None of them has ever clearly said what they're trying to do for a single person. We will. We want to help you flourish in real life. Not become a better version of yourself, just more yourself. Strong relationships. Better health. Meaning. Momentum. A life that feels worth living while you're living it.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;We're building the kind of AI that follows up. That knows the people in your life and nudges you to reach out when it matters. That sends you a poem, just because. The goal is conversations that lead somewhere real. Maybe it's a text you send to a long lost friend. A hobby you pick up again. A moment you show up for yourself.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Everyone else is building AI that thinks. We're building AI that cares.&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;Lifecycle &amp;amp; CRM Specialist&lt;/strong&gt;&lt;/span&gt;&lt;br&gt;About this role&lt;/h3&gt;&lt;p&gt;&lt;span&gt;Millions of people have already met Replika: free users who haven't upgraded yet, subscribers who've lapsed, and people who signed up years ago and drifted away. Almost none of them hear from us in a way that's worth opening. That's the biggest untapped channel we have, and you'll own it.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;You'll build our lifecycle program from the ground up. Email first, then in-app messages, push and any other channel that gets the right message to the right person at the right moment. Onboarding, free-to-paid conversion, renewals, win-back, product launches. The goal is revenue and retention, not open rates.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;This is a hands-on role. You'll help set the lifecycle strategy and build it yourself: the segments, the flows, the copy, the tests and the reporting.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Our users are in almost every country, so you'll work within consent and privacy rules for a global audience, and you'll know how to design a program that is both compliant and effective.&lt;/span&gt;&lt;/p&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;What You’ll Be Doing&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Build the core lifecycle flows: onboarding, free-to-paid conversion, intro offers ending, renewals, cancellation saves and win-back.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Convert free users. Work with product on in-app messages and offers that move people to paid at the right moment.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Reactivate our base. Plan and run campaigns to lapsed users and our long-dormant email list, cleanly and within consent.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Segment and personalize with product and subscription data, so each person gets the message that fits where they are.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Test everything: timing, subject lines, offers, channels. Keep what wins and kill what doesn't.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Own deliverability, list health and the reporting that ties every flow to revenue.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;What We’re Looking For&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Hands-on lifecycle or CRM experience at a consumer subscription app, with revenue results you can show.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;You've built flows yourself in a modern messaging platform like Braze, Customer.io, Iterable or Klaviyo.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Strong with data. You build your own segments and read your own results without waiting for an analyst.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;You understand compliant communication for a global audience: consent, unsubscribes, GDPR, CAN-SPAM and their equivalents.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;You write good copy, or know exactly how to brief and edit it.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;You shape the strategy and do the implementation yourself.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Excellent written English.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;Bonus Points&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;In-app messaging and push experience on iOS and Android.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Deliverability experience: domain reputation, warming, and bringing a large dormant list back safely.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Experience with web and app subscription billing and the events it sends.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;You've worked on a product where trust and tone really matter.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h3&gt;&lt;span&gt;&lt;strong&gt;What You’ll Get&lt;/strong&gt;&lt;/span&gt;&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Flexible job schedule and generous vacation policy.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Direct impact on millions of worldwide users within months.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Push the boundaries of applied AI in a consumer setting.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;&lt;span&gt;Fully remote, able to work CET hours.&lt;/span&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;To apply:&lt;/strong&gt; &lt;a href="https://weworkremotely.com/remote-jobs/replika-lifecycle-crm-specialist"&gt;https://weworkremotely.com/remote-jobs/replika-lifecycle-crm-specialist&lt;/a&gt;&lt;/p&gt;
+</description>
+      <pubDate>Mon, 26 Oct 2026 19:35:20 +0000</pubDate>
+      <expires_at>Wed, 25 Nov 2026 19:35:20 +0000</expires_at>
+      <guid>https://weworkremotely.com/remote-jobs/replika-lifecycle-crm-specialist</guid>
+      <link>https://weworkremotely.com/remote-jobs/replika-lifecycle-crm-specialist</link>
+    
+</item>
+<item>
+  <title>Acme Corp: Senior React Developer</title>
+  <link>https://weworkremotely.com/remote-jobs/remote-jobs/acme-corp-senior-react-developer</link>
+  <guid isPermaLink="true">https://weworkremotely.com/remote-jobs/remote-jobs/acme-corp-senior-react-developer</guid>
+  <pubDate>Mon, 26 Oct 2026 09:00:00 +0000</pubDate>
+  <region>Anywhere in the World</region>
+  <country></country>
+  <state></state>
+  <skills>React, Node.js, and TypeScript</skills>
+  <category>Full-Stack Programming</category>
+  <type>Full-Time</type>
+  <description><![CDATA[<p>We build dashboards with <strong>React</strong> and <a href="https://example.com">TypeScript</a>.</p>]]></description>
+</item>
+<item>
+  <title>Globex: Backend Engineer</title>
+  <link>https://weworkremotely.com/remote-jobs/remote-jobs/globex-backend-engineer</link>
+  <guid isPermaLink="true">https://weworkremotely.com/remote-jobs/remote-jobs/globex-backend-engineer</guid>
+  <pubDate>Sun, 25 Oct 2026 10:30:00 +0000</pubDate>
+  <region></region>
+  <country>🇺🇸 United States of America</country>
+  <state></state>
+  <skills></skills>
+  <category>Back-End Programming</category>
+  <type>Contract</type>
+  <description><![CDATA[<p>Go services and PostgreSQL.</p>]]></description>
+</item>
+</channel>
+</rss>

@@ -34,6 +34,7 @@ import { ArbeitnowJobSource } from "@/infrastructure/job-sources/arbeitnow/arbei
 import { FixtureJobSource } from "@/infrastructure/job-sources/fixture/fixture-job-source";
 import { HimalayasJobSource } from "@/infrastructure/job-sources/himalayas/himalayas-job-source";
 import { RemotiveJobSource } from "@/infrastructure/job-sources/remotive/remotive-job-source";
+import { WwrJobSource } from "@/infrastructure/job-sources/wwr/wwr-job-source";
 import { cipherFromEnv } from "@/infrastructure/security/secret-cipher";
 import { envDefaultSettings } from "@/infrastructure/settings/env-defaults";
 
@@ -71,6 +72,7 @@ function resolveJobSources(): JobSourcePort[] {
     new RemotiveJobSource(undefined, integrationSettingsReader),
     new ArbeitnowJobSource(undefined, integrationSettingsReader),
     new HimalayasJobSource(undefined, integrationSettingsReader),
+    new WwrJobSource(undefined, integrationSettingsReader),
   ];
 }
 
