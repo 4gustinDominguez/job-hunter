@@ -11,9 +11,10 @@ import {
   ValidationError,
 } from "@/application";
 import { requireSession } from "./auth";
+import { criteriaFromProfile } from "./search-criteria";
 import type { ApplicationStatus } from "@/domain/application/enums";
 import type { DocumentKind } from "@/domain/documents/generated-document";
-import type { JobSearchCriteria, JobSearchProfile } from "@/domain/search/search-profile";
+import type { JobSearchCriteria } from "@/domain/search/search-profile";
 import {
   addJobNote,
   analyzeJobFit,
@@ -47,20 +48,6 @@ import {
   profileFormSchema,
   searchProfileFormSchema,
 } from "./schemas";
-
-function criteriaFromProfile(profile: JobSearchProfile): JobSearchCriteria {
-  return {
-    keywords: profile.keywords,
-    locations: profile.locations.length > 0 ? profile.locations : undefined,
-    remotePreference: profile.remotePreference,
-    employmentTypes: profile.employmentTypes,
-    seniority: profile.seniority,
-    salaryMinimum: profile.salary?.minimum,
-    salaryCurrency: profile.salary?.currency,
-    excludedCompanies: profile.excludedCompanies,
-    excludedKeywords: profile.excludedKeywords,
-  };
-}
 
 function toSaveProfileInput(values: ProfileFormValues): SaveProfileInput {
   const hasLocation = Boolean(values.city || values.region || values.country);

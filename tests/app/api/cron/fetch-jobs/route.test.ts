@@ -3,16 +3,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const ingestRunMock = vi.fn();
 const prefilterRunMock = vi.fn();
 const analyzeRunMock = vi.fn();
+const searchProfilesListMock = vi.fn();
 vi.mock("@/app/_lib/container", () => ({
   ingestJobs: { run: ingestRunMock },
   prefilterJobs: { run: prefilterRunMock },
   analyzePendingJobs: { run: analyzeRunMock },
+  searchProfileRepository: { list: searchProfilesListMock },
 }));
 
 const { GET } = await import("@/app/api/cron/fetch-jobs/route");
 
 describe("cron fetch-jobs route", () => {
   beforeEach(() => {
+    searchProfilesListMock.mockReset().mockResolvedValue([]);
     ingestRunMock
       .mockReset()
       .mockResolvedValue({ fetched: 0, created: 0, attached: 0, skipped: 0, errors: [] });
@@ -73,5 +76,47 @@ describe("cron fetch-jobs route", () => {
     expect(body).toHaveProperty("ingest");
     expect(body).toHaveProperty("prefilter");
     expect(body).toHaveProperty("analysis");
+  });
+
+  it("fetches with the oldest search profile as the standing criteria", async () => {
+    vi.stubEnv("CRON_SECRET", "s3cret");
+    searchProfilesListMock.mockResolvedValue([
+      {
+        id: "sp-1",
+        name: "EU React",
+        keywords: ["react"],
+        locations: ["Madrid"],
+        remotePreference: "REMOTE",
+        employmentTypes: ["FULL_TIME"],
+        seniority: ["SENIOR"],
+        salary: { minimum: 60000, currency: "EUR" },
+        excludedCompanies: ["Acme"],
+        excludedKeywords: ["crypto"],
+      },
+      {
+        id: "sp-2",
+        name: "Ignored newer profile",
+        keywords: ["go"],
+        locations: [],
+      },
+    ]);
+
+    await GET(
+      new Request("http://localhost/api/cron/fetch-jobs", {
+        headers: { authorization: "Bearer s3cret" },
+      }),
+    );
+
+    expect(ingestRunMock).toHaveBeenCalledWith({
+      keywords: ["react"],
+      locations: ["Madrid"],
+      remotePreference: "REMOTE",
+      employmentTypes: ["FULL_TIME"],
+      seniority: ["SENIOR"],
+      salaryMinimum: 60000,
+      salaryCurrency: "EUR",
+      excludedCompanies: ["Acme"],
+      excludedKeywords: ["crypto"],
+    });
   });
 });

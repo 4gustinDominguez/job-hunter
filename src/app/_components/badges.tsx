@@ -86,3 +86,30 @@ export function RemoteBadge({ remoteType }: { remoteType?: RemoteType }) {
     </span>
   );
 }
+
+/**
+ * Attribution required by source terms of use (Himalayas demands a visible
+ * link; Remotive/Arbeitnow/WWR ask for credit). Rendered next to the source
+ * badge on the job detail page, where Apply lives.
+ */
+export const SOURCE_ATTRIBUTION: Partial<Record<JobSourceType, { href: string; label: string }>> = {
+  REMOTIVE: { href: "https://remotive.com", label: "remotive.com" },
+  ARBEITNOW: { href: "https://www.arbeitnow.com", label: "arbeitnow.com" },
+  HIMALAYAS: { href: "https://himalayas.app", label: "himalayas.app" },
+  WWR: { href: "https://weworkremotely.com", label: "weworkremotely.com" },
+};
+
+export function SourceAttributionLink({ source }: { source: JobSourceType }) {
+  const attribution = SOURCE_ATTRIBUTION[source];
+  if (!attribution) return null;
+  return (
+    <a
+      href={attribution.href}
+      target="_blank"
+      rel="noreferrer"
+      className="font-mono text-xs text-muted hover:text-accent-strong hover:underline"
+    >
+      via {attribution.label}
+    </a>
+  );
+}

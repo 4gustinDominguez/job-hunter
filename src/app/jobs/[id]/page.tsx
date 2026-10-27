@@ -2,7 +2,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FitBadge, RemoteBadge, SourceBadge } from "../../_components/badges";
+import {
+  FitBadge,
+  RemoteBadge,
+  SourceAttributionLink,
+  SourceBadge,
+} from "../../_components/badges";
 import { addJobNoteAction, analyzeJobFitAction, createApplicationAction } from "../../_lib/actions";
 import {
   analysisRepository,
@@ -149,6 +154,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
           <span>{formatLocation(job.location)}</span>
           <RemoteBadge remoteType={job.remoteType} />
           <SourceBadge source={job.source} />
+          <SourceAttributionLink source={job.source} />
           {record ? <FitBadge classification={record.analysis.classification} /> : null}
         </div>
       </header>

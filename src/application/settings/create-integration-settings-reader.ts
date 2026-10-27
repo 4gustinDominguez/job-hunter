@@ -8,9 +8,11 @@ import type { JobSourceType } from "@/domain/job/enums";
 
 /**
  * Effective settings per provider: the stored row wins; a missing row falls
- * back to the env-derived default (JOB_SOURCES etc.) so behaviour is unchanged
- * before anyone opens /integrations. Decryption failures degrade to "no key"
- * with a warning — a missing SETTINGS_SECRET must not take down the whole cron.
+ * back to the env-derived default (JOB_SOURCES, HIMALAYAS_API_KEY, …) so
+ * behaviour is unchanged before anyone opens /integrations. The env API key
+ * also backs up a row that has no stored key (or one that no longer
+ * decrypts). Decryption failures degrade with a warning — a missing
+ * SETTINGS_SECRET must not take down the whole cron.
  */
 export function createIntegrationSettingsReader(
   settings: IntegrationSettingsRepositoryPort,
@@ -18,14 +20,15 @@ export function createIntegrationSettingsReader(
   fallback: (provider: JobSourceType) => SourceSettings,
 ): IntegrationSettingsReader {
   return async (provider: JobSourceType): Promise<SourceSettings> => {
+    const base = fallback(provider);
     const stored = await settings.get(provider);
-    if (!stored) return fallback(provider);
+    if (!stored) return base;
 
-    let apiKey: string | undefined;
+    let apiKey = base.apiKey;
     if (stored.apiKeyCiphertext) {
       if (!cipher) {
         console.warn(
-          `[settings] ${provider} has a stored API key but SETTINGS_SECRET is not set — running without it.`,
+          `[settings] ${provider} has a stored API key but SETTINGS_SECRET is not set — falling back to the environment.`,
         );
       } else {
         try {

@@ -3,6 +3,11 @@ import { JOB_SOURCE_TYPES, type JobSourceType } from "@/domain/job/enums";
 
 const DEFAULT_JOB_SOURCES = "remotive,arbeitnow,himalayas,wwr";
 
+/** Providers that can read their API key from the environment as a fallback. */
+const ENV_API_KEYS: Partial<Record<JobSourceType, string | undefined>> = {
+  HIMALAYAS: process.env.HIMALAYAS_API_KEY,
+};
+
 /**
  * Env-derived defaults used when a provider has no settings row yet (and by
  * /integrations to render the initial state). JOB_SOURCES selects which
@@ -22,6 +27,7 @@ export function envEnabledSources(): Set<JobSourceType> {
 export function envDefaultSettings(provider: JobSourceType): SourceSettings {
   return {
     enabled: envEnabledSources().has(provider),
+    apiKey: ENV_API_KEYS[provider]?.trim() || undefined,
     countries: [],
     keywords: [],
     maxItems: undefined,

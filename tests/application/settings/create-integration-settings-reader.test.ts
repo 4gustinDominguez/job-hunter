@@ -78,3 +78,44 @@ describe("createIntegrationSettingsReader", () => {
     await expect(reader("HIMALAYAS")).resolves.toMatchObject({ apiKey: undefined });
   });
 });
+
+describe("createIntegrationSettingsReader env key backup", () => {
+  it("uses the fallback api key when the row has none stored", async () => {
+    const repo = new InMemoryIntegrationSettingsRepository();
+    await repo.upsert({
+      provider: "HIMALAYAS",
+      enabled: true,
+      countries: ["Spain"],
+      keywords: [],
+      maxItems: null,
+    });
+    const reader = createIntegrationSettingsReader(repo, cipher, (provider) => ({
+      ...fallback(provider),
+      apiKey: provider === "HIMALAYAS" ? "hk-from-env" : undefined,
+    }));
+
+    await expect(reader("HIMALAYAS")).resolves.toMatchObject({
+      apiKey: "hk-from-env",
+      countries: ["Spain"],
+    });
+  });
+
+  it("keeps the env key when the stored payload no longer decrypts", async () => {
+    const repo = new InMemoryIntegrationSettingsRepository();
+    await repo.upsert({
+      provider: "HIMALAYAS",
+      enabled: true,
+      apiKeyCiphertext: new AesGcmSecretCipher(Buffer.alloc(32, 1)).encrypt("stale"),
+      apiKeyHint: "••••tale",
+      countries: [],
+      keywords: [],
+      maxItems: null,
+    });
+    const reader = createIntegrationSettingsReader(repo, cipher, (provider) => ({
+      ...fallback(provider),
+      apiKey: provider === "HIMALAYAS" ? "hk-from-env" : undefined,
+    }));
+
+    await expect(reader("HIMALAYAS")).resolves.toMatchObject({ apiKey: "hk-from-env" });
+  });
+});
