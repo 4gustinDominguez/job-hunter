@@ -21,4 +21,5 @@ export interface Job {
   skills?: string[];
   notes?: string[];
   analysisState?: AnalysisState;
+  dismissedAt?: Date;
 }

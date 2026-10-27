@@ -6,4 +6,6 @@ export interface JobFilter {
   remoteType?: RemoteType;
   employmentType?: EmploymentType;
   source?: JobSourceType;
+  /** Default false: dismissed jobs are hidden from every browse view. */
+  includeDismissed?: boolean;
 }

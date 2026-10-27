@@ -26,6 +26,7 @@ import {
   generateApplicationDocument,
   ingestJobs,
   ingestionRunRepository,
+  jobRepository,
   prefilterJobs,
   saveApplicationDocument,
   saveIntegrationSettings,
@@ -437,4 +438,14 @@ export async function saveIntegrationSettingsAction(
   }
   revalidatePath("/integrations");
   return { errors: {}, message: "Saved — effective on the next fetch, no redeploy needed." };
+}
+
+export async function dismissJobAction(formData: FormData): Promise<void> {
+  await requireSession();
+  const jobId = String(formData.get("jobId") ?? "");
+  const dismissed = formData.get("dismissed") !== "false";
+  await jobRepository.setDismissed(jobId, dismissed);
+  revalidatePath("/jobs");
+  revalidatePath(`/jobs/${jobId}`);
+  refresh();
 }

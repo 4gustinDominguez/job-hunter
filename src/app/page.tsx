@@ -46,13 +46,20 @@ export default async function HuntDashboardPage() {
     ingestionRunRepository.latest(),
   ]);
   const analyses = await analysisRepository.getMany(jobs.map((job) => job.id));
+  // Funnel: applied jobs live on /applications — keep them out of the review
+  // sections here (recent offers + strong fit).
+  const appliedIds = new Set(applications.map((application) => application.jobId));
 
   const recentOffers = jobs
+    .filter((job) => !appliedIds.has(job.id))
     .toSorted((a, b) => publishedDate(b).getTime() - publishedDate(a).getTime())
     .slice(0, RECENT_OFFERS_LIMIT);
 
   const strongFit = jobs
-    .filter((job) => analyses.get(job.id)?.analysis.classification === "STRONG")
+    .filter(
+      (job) =>
+        !appliedIds.has(job.id) && analyses.get(job.id)?.analysis.classification === "STRONG",
+    )
     .toSorted((a, b) => publishedDate(b).getTime() - publishedDate(a).getTime())
     .slice(0, STRONG_FIT_LIMIT);
 

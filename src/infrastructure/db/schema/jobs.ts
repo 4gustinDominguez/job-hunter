@@ -22,6 +22,9 @@ export const jobs = pgTable(
     contentKey: text("content_key").notNull(),
     notes: text("notes").array().notNull().default([]),
     analysisState: text("analysis_state", { enum: ANALYSIS_STATES }).notNull().default("none"),
+    // Funnel (phase 13): "not interested" mark — dismissed jobs stay in the DB
+    // (analysis intact) but disappear from every browse view until un-dismissed.
+    dismissedAt: timestamp("dismissed_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .defaultNow()

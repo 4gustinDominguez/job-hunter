@@ -92,3 +92,31 @@ describe("ListJobs", () => {
     expect(await useCase.run({ query: "zzz-no-match" })).toHaveLength(0);
   });
 });
+
+describe("ListJobs dismissed funnel", () => {
+  let jobs: InMemoryJobRepository;
+  let useCase: ListJobs;
+
+  beforeEach(async () => {
+    jobs = new InMemoryJobRepository();
+    useCase = new ListJobs(jobs);
+    await jobs.save(makeJob({ id: "keep", url: "https://jobs.example/keep" }), "c1");
+    await jobs.save(makeJob({ id: "bye", url: "https://jobs.example/bye" }), "c2");
+  });
+
+  it("hides dismissed jobs by default and includes them on request", async () => {
+    await jobs.setDismissed("bye", true);
+
+    expect((await useCase.run()).map((job) => job.id)).toEqual(["keep"]);
+
+    const withDismissed = await useCase.run({ includeDismissed: true });
+    expect(withDismissed.map((job) => job.id).toSorted()).toEqual(["bye", "keep"]);
+  });
+
+  it("restores a dismissed job when un-dismissed", async () => {
+    await jobs.setDismissed("bye", true);
+    await jobs.setDismissed("bye", false);
+
+    expect((await useCase.run()).map((job) => job.id).toSorted()).toEqual(["bye", "keep"]);
+  });
+});

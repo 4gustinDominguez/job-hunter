@@ -8,7 +8,12 @@ import {
   SourceAttributionLink,
   SourceBadge,
 } from "../../_components/badges";
-import { addJobNoteAction, analyzeJobFitAction, createApplicationAction } from "../../_lib/actions";
+import {
+  addJobNoteAction,
+  analyzeJobFitAction,
+  createApplicationAction,
+  dismissJobAction,
+} from "../../_lib/actions";
 import {
   analysisRepository,
   applicationRepository,
@@ -156,6 +161,18 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
           <SourceBadge source={job.source} />
           <SourceAttributionLink source={job.source} />
           {record ? <FitBadge classification={record.analysis.classification} /> : null}
+        </div>
+        <div className="flex justify-end">
+          <form action={dismissJobAction}>
+            <input type="hidden" name="jobId" value={job.id} />
+            <input type="hidden" name="dismissed" value={job.dismissedAt ? "false" : "true"} />
+            <button
+              type="submit"
+              className="rounded-md border border-line px-3 py-1.5 text-sm text-muted hover:text-danger"
+            >
+              {job.dismissedAt ? "↺ Restore job" : "Not interested"}
+            </button>
+          </form>
         </div>
       </header>
 

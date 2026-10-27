@@ -16,6 +16,9 @@ export class InMemoryJobRepository implements JobRepositoryPort {
 
   async list(filter: JobFilter = {}): Promise<Job[]> {
     let result = [...this.canonical.values()];
+    if (filter.includeDismissed !== true) {
+      result = result.filter((job) => job.dismissedAt === undefined);
+    }
     if (filter.query !== undefined) {
       const query = normalizeText(filter.query);
       result = result.filter(
@@ -169,6 +172,13 @@ export class InMemoryJobRepository implements JobRepositoryPort {
     const job = this.canonical.get(jobId);
     if (job) {
       this.canonical.set(jobId, { ...job, analysisState: state });
+    }
+  }
+
+  async setDismissed(jobId: string, dismissed: boolean): Promise<void> {
+    const job = this.canonical.get(jobId);
+    if (job) {
+      this.canonical.set(jobId, { ...job, dismissedAt: dismissed ? new Date() : undefined });
     }
   }
 

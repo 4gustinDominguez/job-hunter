@@ -1,5 +1,5 @@
 /* oxlint-disable no-await-in-loop -- saveMany chunks insert sequentially by contract */
-import { and, asc, desc, eq, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import type { JobFilter } from "@/application/jobs/job-filter";
 import type { JobRepositoryPort } from "@/application/ports/job-repository-port";
 import { canonicalizeUrl, jobContentKey } from "@/domain/job/dedup";
@@ -45,6 +45,7 @@ function toDomainJob(row: JobWithCompany, listing: ListingRow): Job {
     skills: row.job.skills ?? undefined,
     notes: row.job.notes ?? undefined,
     analysisState: row.job.analysisState ?? "none",
+    dismissedAt: row.job.dismissedAt ?? undefined,
   };
 }
 
@@ -93,6 +94,9 @@ export class DrizzleJobRepository implements JobRepositoryPort {
       conditions.push(
         sql`exists (select 1 from ${jobListings} where ${jobListings.jobId} = ${jobs.id} and ${jobListings.source} = ${source})`,
       );
+    }
+    if (filter.includeDismissed !== true) {
+      conditions.push(isNull(jobs.dismissedAt));
     }
     const rows = await this.database
       .select({ job: jobs, company: companies })
@@ -260,6 +264,13 @@ export class DrizzleJobRepository implements JobRepositoryPort {
 
   async setAnalysisState(jobId: string, state: AnalysisState): Promise<void> {
     await this.database.update(jobs).set({ analysisState: state }).where(eq(jobs.id, jobId));
+  }
+
+  async setDismissed(jobId: string, dismissed: boolean): Promise<void> {
+    await this.database
+      .update(jobs)
+      .set({ dismissedAt: dismissed ? new Date() : null })
+      .where(eq(jobs.id, jobId));
   }
 
   private listingValues(jobId: string, job: Job) {

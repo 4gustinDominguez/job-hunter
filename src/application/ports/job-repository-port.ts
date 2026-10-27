@@ -26,4 +26,6 @@ export interface JobRepositoryPort {
   attachListing(jobId: string, job: Job): Promise<void>;
   updateNotes(jobId: string, notes: string[]): Promise<void>;
   setAnalysisState(jobId: string, state: AnalysisState): Promise<void>;
+  /** Funnel: mark/unmark a job as "not interested" (dismissed_at). */
+  setDismissed(jobId: string, dismissed: boolean): Promise<void>;
 }

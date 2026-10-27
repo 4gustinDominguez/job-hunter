@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FitBadge, FitStateBadge, RemoteBadge, SourceBadge } from "../_components/badges";
-import { analysisRepository, listJobs } from "../_lib/container";
+import { dismissJobAction } from "../_lib/actions";
+import { analysisRepository, applicationRepository, listJobs } from "../_lib/container";
 import { formatLocation, formatSalary } from "../_lib/format";
 import { EMPLOYMENT_TYPES, REMOTE_TYPES } from "@/domain/job/enums";
 import { JOB_SOURCE_TYPES } from "@/domain/job/enums";
@@ -62,6 +63,7 @@ export default async function JobsPage({
   const fitValues = enumListParam<MatchClassification>(sp.fit, MATCH_CLASSIFICATIONS);
   const state = asEnumValue<AnalysisState>(sp.state, ANALYSIS_STATES);
   const sortByFit = sp.sort === "fit";
+  const showDismissed = sp.dismissed === "1";
 
   const allJobs = await listJobs.run({
     query: q || undefined,
@@ -69,10 +71,15 @@ export default async function JobsPage({
     remoteType,
     employmentType,
     source,
+    includeDismissed: showDismissed,
   });
   const analyses = await analysisRepository.getMany(allJobs.map((job) => job.id));
+  // Funnel: applied jobs live on /applications — they only clutter the review
+  // list here (the job detail stays reachable from the application page).
+  const applications = await applicationRepository.list();
+  const appliedIds = new Set(applications.map((application) => application.jobId));
 
-  let jobs = allJobs;
+  let jobs = allJobs.filter((job) => !appliedIds.has(job.id));
   if (fitValues.length > 0) {
     jobs = jobs.filter((job) => {
       const record = analyses.get(job.id);
@@ -102,7 +109,8 @@ export default async function JobsPage({
     source ||
     fitValues.length ||
     state ||
-    sortByFit,
+    sortByFit ||
+    showDismissed,
   );
 
   // Paginate after all filters/sort: "N matching" is the filtered total, the
@@ -124,7 +132,17 @@ export default async function JobsPage({
     if (fitValues.length > 0) params.set("fit", fitValues.join(","));
     if (state) params.set("state", state);
     if (sortByFit) params.set("sort", "fit");
+    if (showDismissed) params.set("dismissed", "1");
     if (target > 1) params.set("page", String(target));
+    const queryString = params.toString();
+    return queryString === "" ? "/jobs" : `/jobs?${queryString}`;
+  };
+
+  // Toggle URL for the dismissed view (keeps every other filter).
+  const withDismissed = (show: boolean): `/jobs?${string}` | "/jobs" => {
+    const params = new URLSearchParams(pageHref(1).split("?")[1] ?? "");
+    if (show) params.set("dismissed", "1");
+    else params.delete("dismissed");
     const queryString = params.toString();
     return queryString === "" ? "/jobs" : `/jobs?${queryString}`;
   };
@@ -286,6 +304,12 @@ export default async function JobsPage({
           >
             Apply filters
           </button>
+          <Link
+            href={withDismissed(!showDismissed)}
+            className="h-9 rounded-md border border-line px-4 py-2 text-sm text-muted hover:text-ink"
+          >
+            {showDismissed ? "Hide dismissed" : "Show dismissed"}
+          </Link>
           {hasFilters ? (
             <Link
               href="/jobs"
@@ -310,10 +334,10 @@ export default async function JobsPage({
           {pageJobs.map((job) => {
             const record = analyses.get(job.id);
             return (
-              <li key={job.id}>
+              <li key={job.id} className="flex items-stretch">
                 <Link
                   href={`/jobs/${job.id}`}
-                  className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 px-4 py-3 hover:bg-paper"
+                  className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-4 gap-y-2 px-4 py-3 hover:bg-paper"
                 >
                   <div className="min-w-0">
                     <p className="truncate font-medium">{job.title}</p>
@@ -342,6 +366,18 @@ export default async function JobsPage({
                     </time>
                   </div>
                 </Link>
+                <form action={dismissJobAction} className="flex items-center pr-2">
+                  <input type="hidden" name="jobId" value={job.id} />
+                  <input type="hidden" name="dismissed" value={showDismissed ? "false" : "true"} />
+                  <button
+                    type="submit"
+                    aria-label={showDismissed ? `Restore ${job.title}` : `Dismiss ${job.title}`}
+                    title={showDismissed ? "Restore" : "Not interested"}
+                    className="rounded px-2 py-1 text-base leading-none text-muted hover:text-danger"
+                  >
+                    {showDismissed ? "↺" : "×"}
+                  </button>
+                </form>
               </li>
             );
           })}
