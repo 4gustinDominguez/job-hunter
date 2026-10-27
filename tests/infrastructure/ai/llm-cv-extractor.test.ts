@@ -83,6 +83,27 @@ describe("LlmCvExtractor", () => {
     expect(chat.turns).toHaveLength(1);
   });
 
+  it("drops CV category headings from the extracted skills", async () => {
+    const chat = new FakeChat([
+      JSON.stringify({
+        ...JSON.parse(DRAFT_JSON),
+        skills: [
+          { name: "Frontend", category: "FRAMEWORK", level: "INTERMEDIATE" },
+          { name: "  backend ", category: "TOOL", level: "INTERMEDIATE" },
+          { name: "Testing", category: "TOOL", level: "INTERMEDIATE" },
+          { name: "Tools", category: "TOOL", level: "INTERMEDIATE" },
+          { name: "React", category: "FRAMEWORK", level: "EXPERT" },
+          { name: "Clean Architecture", category: "PROGRAMMING", level: "ADVANCED" },
+        ],
+      }),
+    ]);
+
+    const draft = await extractorWith(chat).extract(new Uint8Array([1]));
+
+    expect(draft.skills.map((skill) => skill.name)).toEqual(["React", "Clean Architecture"]);
+    expect(chat.turns[0]?.[0]?.content).toContain("category labels");
+  });
+
   it("retries once with feedback when the first response is invalid", async () => {
     const chat = new FakeChat(["not json at all", DRAFT_JSON]);
 

@@ -12,6 +12,30 @@ const MAX_ATTEMPTS = 2;
 const EXTRACTION_TIMEOUT_MS = 120_000;
 const EXTRACTION_MAX_TOKENS = 6144;
 
+// Skills sections in CVs are labelled by category ("Frontend:", "Backend:").
+// Those headings are not skills — they'd pollute fit scoring if kept.
+const SKILL_CATEGORY_LABELS: ReadonlySet<string> = new Set([
+  "frontend",
+  "backend",
+  "tools",
+  "testing",
+  "architecture",
+  "databases",
+  "platforms",
+  "languages",
+  "programming languages",
+  "libraries",
+  "frameworks",
+  "devops",
+  "methodologies",
+  "soft skills",
+  "operating systems",
+]);
+
+export function stripCategoryLabels<T extends { name: string }>(skills: readonly T[]): T[] {
+  return skills.filter((skill) => !SKILL_CATEGORY_LABELS.has(skill.name.trim().toLowerCase()));
+}
+
 function buildSystemPrompt(): string {
   return `Extract a candidate profile from the CV text the user sends.
 Respond with ONLY one JSON object (no markdown fences, no commentary) with exactly these keys:
@@ -35,6 +59,7 @@ Rules:
 - For endDate use the last day of the stated period ("2022" → "2022-12-31"); omit endDate only when the CV says present or current.
 - Never write null: omit unknown optional keys entirely.
 - skills must include EVERY skill listed in the CV — never return an empty skills array unless the CV has no skills at all. skills[].level is REQUIRED for every skill: use the level stated in the CV; when no level is stated, write "INTERMEDIATE". Never omit level.
+- skills must NEVER contain section headings or category labels (e.g. "Frontend", "Backend", "Tools", "Testing", "Languages", "Architecture", "Databases", "Platforms") — only the concrete technologies, tools and practices listed under them.
 - preferences: desiredRoles = 1-3 SHORT job titles for the candidate's CURRENT positioning (seniority kept as written). When both exist and are distinct, include the Headline title (the part before the first "|") AND the summary's opening title phrase — e.g. headline "Senior Software Engineer | Full-Stack…" + summary "Senior Full-Stack Developer with…" → ["Senior Software Engineer", "Senior Full-Stack Developer"]. Never copy a whole headline, stack list or comma-joined phrases into one role, and never split one title into two; do not prefer older job-preference or past job-title lists when a summary positioning exists; remotePreference "ANY" unless the CV states one; employmentTypes ["FULL_TIME"] unless stated otherwise; include salaryExpectation only if the CV states a salary.
 - Omit unknown optional fields and use [] for arrays with no relevant content.
 - Keep output compact: field values concise (short phrases, not paragraphs) — EXCEPT summary, which must be complete per its rule; never repeat keys or content, and do not add commentary outside the JSON.
@@ -45,6 +70,7 @@ Abbreviated example: {"name":"…","email":"…","experience":[{"company":"…",
 function toSaveProfileInput(draft: ProfileDraft, facts: CvFacts): SaveProfileInput {
   const location = draft.location;
   const hasLocation = Boolean(location?.city || location?.region || location?.country);
+  const cleanSkills = stripCategoryLabels(draft.skills);
   return {
     // Deterministic merge: facts always win over the model for contact fields
     // and for the summary (the model reliably shortens it to one sentence).
@@ -67,11 +93,12 @@ function toSaveProfileInput(draft: ProfileDraft, facts: CvFacts): SaveProfileInp
       startDate: new Date(item.startDate),
       endDate: item.endDate ? new Date(item.endDate) : undefined,
     })),
-    skills: draft.skills.map((item) => ({
-      ...item,
-      id: item.id ?? crypto.randomUUID(),
-      lastUsed: item.lastUsed ? new Date(item.lastUsed) : undefined,
-    })),
+    skills: cleanSkills.map((item) =>
+      Object.assign({}, item, {
+        id: item.id ?? crypto.randomUUID(),
+        lastUsed: item.lastUsed ? new Date(item.lastUsed) : undefined,
+      }),
+    ),
     projects: draft.projects.map((item) => ({
       ...item,
       id: item.id ?? crypto.randomUUID(),
