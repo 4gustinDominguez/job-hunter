@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { analyzePendingJobs, prefilterJobs } from "../src/app/_lib/container";
 
 async function main(): Promise<void> {
@@ -34,7 +35,6 @@ async function main(): Promise<void> {
   // flush before exiting or the [ai] call logs never leave the box. No-op
   // without SENTRY_DSN.
   if (process.env.SENTRY_DSN) {
-    const Sentry = await import("@sentry/nextjs");
     await Sentry.flush(5000);
   }
 }
