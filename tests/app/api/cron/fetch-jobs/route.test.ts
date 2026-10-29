@@ -6,12 +6,18 @@ const analyzeRunMock = vi.fn();
 const searchProfilesListMock = vi.fn();
 const ingestionStartMock = vi.fn();
 const ingestionFinishMock = vi.fn();
+const beginCheckInMock = vi.fn();
+const finishCheckInMock = vi.fn();
 vi.mock("@/app/_lib/container", () => ({
   ingestJobs: { run: ingestRunMock },
   prefilterJobs: { run: prefilterRunMock },
   analyzePendingJobs: { run: analyzeRunMock },
   searchProfileRepository: { list: searchProfilesListMock },
   ingestionRunRepository: { start: ingestionStartMock, finish: ingestionFinishMock },
+}));
+vi.mock("@/app/_lib/sentry-cron", () => ({
+  beginCronCheckIn: beginCheckInMock,
+  finishCronCheckIn: finishCheckInMock,
 }));
 
 const { GET } = await import("@/app/api/cron/fetch-jobs/route");
@@ -36,6 +42,8 @@ describe("cron fetch-jobs route", () => {
       none: 0,
       errors: [],
     });
+    beginCheckInMock.mockReset().mockReturnValue("check-in-123");
+    finishCheckInMock.mockReset();
   });
 
   afterEach(() => {
@@ -49,6 +57,8 @@ describe("cron fetch-jobs route", () => {
 
     expect(response.status).toBe(401);
     expect(ingestRunMock).not.toHaveBeenCalled();
+    expect(ingestionStartMock).not.toHaveBeenCalled();
+    expect(beginCheckInMock).not.toHaveBeenCalled();
   });
 
   it("returns 401 when the bearer token does not match", async () => {
@@ -62,6 +72,8 @@ describe("cron fetch-jobs route", () => {
 
     expect(response.status).toBe(401);
     expect(ingestRunMock).not.toHaveBeenCalled();
+    expect(ingestionStartMock).not.toHaveBeenCalled();
+    expect(beginCheckInMock).not.toHaveBeenCalled();
   });
 
   it("chains fetch → prefilter → analyze for a valid token", async () => {
@@ -129,5 +141,46 @@ describe("cron fetch-jobs route", () => {
       excludedCompanies: ["Acme"],
       excludedKeywords: ["crypto"],
     });
+  });
+
+  it("closes the cron check-in as ok on a successful run", async () => {
+    vi.stubEnv("CRON_SECRET", "s3cret");
+
+    await GET(
+      new Request("http://localhost/api/cron/fetch-jobs", {
+        headers: { authorization: "Bearer s3cret" },
+      }),
+    );
+
+    expect(beginCheckInMock).toHaveBeenCalledTimes(1);
+    expect(finishCheckInMock).toHaveBeenCalledTimes(1);
+    const [checkInId, ok] = finishCheckInMock.mock.calls[0] as [string, boolean];
+    expect(checkInId).toBe("check-in-123");
+    expect(ok).toBe(true);
+  });
+
+  it("reports an error check-in and rethrows when the chain throws", async () => {
+    vi.stubEnv("CRON_SECRET", "s3cret");
+    ingestRunMock.mockRejectedValue(new Error("db down"));
+
+    await expect(
+      GET(
+        new Request("http://localhost/api/cron/fetch-jobs", {
+          headers: { authorization: "Bearer s3cret" },
+        }),
+      ),
+    ).rejects.toThrow("db down");
+
+    // The run row still finishes (with the exception) — the process must not
+    // die without a trace.
+    expect(ingestionFinishMock).toHaveBeenCalledWith(
+      "run-1",
+      expect.objectContaining({
+        errors: [{ stage: "exception", message: "db down" }],
+      }),
+    );
+    const [checkInId, ok] = finishCheckInMock.mock.calls[0] as [string, boolean];
+    expect(checkInId).toBe("check-in-123");
+    expect(ok).toBe(false);
   });
 });

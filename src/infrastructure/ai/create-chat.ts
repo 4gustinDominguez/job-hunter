@@ -1,4 +1,7 @@
 import { OpenAiCompatibleChat, type ChatClient, type ChatConfig } from "./chat-client";
+import type { LoggerPort } from "@/application/ports/logger-port";
+import { NOOP_LOGGER } from "@/application/ports/logger-port";
+import { LoggedChat } from "./logged-chat";
 import { OllamaNativeChat } from "./ollama-chat";
 
 export function resolveChatConfig(provider: string): ChatConfig {
@@ -73,12 +76,17 @@ export interface ChatAndConfig {
   config: ChatConfig;
 }
 
-export function createChat(provider = process.env.AI_PROVIDER ?? "ollama"): ChatAndConfig {
+export function createChat(
+  provider = process.env.AI_PROVIDER ?? "ollama",
+  logger: LoggerPort = NOOP_LOGGER,
+): ChatAndConfig {
   const resolved = provider.toLowerCase();
   const config = resolveChatConfig(resolved);
-  const chat =
+  const client =
     resolved === "ollama" || resolved === "ollama-cloud"
       ? new OllamaNativeChat(config)
       : new OpenAiCompatibleChat(config);
-  return { chat, config };
+  // Wrap once, here: a single chokepoint logs every LLM call uniformly across
+  // providers via the Logger port (Sentry Logs), instead of console.*.
+  return { chat: new LoggedChat(client, logger), config };
 }

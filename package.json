@@ -34,6 +34,7 @@
     "auth:hash": "node --import tsx scripts/auth-hash.ts"
   },
   "dependencies": {
+    "@sentry/nextjs": "^11.9.0",
     "drizzle-orm": "^0.45.4",
     "fast-xml-parser": "^5.11.2",
     "jose": "^6.2.13",

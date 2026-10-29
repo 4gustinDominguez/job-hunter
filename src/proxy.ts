@@ -11,7 +11,8 @@ import { jwtVerify } from "jose";
  */
 const SESSION_COOKIE = "session";
 
-/** Paths reachable without a session. /api/cron authenticates via CRON_SECRET. */
+/** Paths reachable without a session. /api/cron authenticates via CRON_SECRET;
+ * /api/health is a public liveness probe (no secrets in the payload). */
 const PUBLIC_PREFIXES = ["/login", "/api/cron", "/api/health"];
 
 export function isPublicPath(pathname: string): boolean {

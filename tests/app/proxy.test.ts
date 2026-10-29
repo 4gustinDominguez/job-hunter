@@ -9,12 +9,14 @@ describe("proxy: isPublicPath", () => {
     expect(isPublicPath("/login")).toBe(true);
     expect(isPublicPath("/api/cron/fetch-jobs")).toBe(true);
     expect(isPublicPath("/api/health")).toBe(true);
+    expect(isPublicPath("/api/health/deep")).toBe(true);
 
     expect(isPublicPath("/")).toBe(false);
     expect(isPublicPath("/jobs")).toBe(false);
     expect(isPublicPath("/api/cv")).toBe(false);
     expect(isPublicPath("/login-adjacent")).toBe(false);
     expect(isPublicPath("/apix")).toBe(false);
+    expect(isPublicPath("/api/healthcheck-admin")).toBe(false);
   });
 });
 
