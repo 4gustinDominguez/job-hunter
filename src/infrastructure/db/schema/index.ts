@@ -10,6 +10,7 @@ export * from "./application-documents";
 export * from "./applications";
 export * from "./candidate";
 export * from "./companies";
+export * from "./ingestion-runs";
 export * from "./job-analyses";
 export * from "./jobs";
 export * from "./search-profiles";

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import type { IngestionRun } from "@/application";
 import {
   FitBadge,
   FitStateBadge,
@@ -11,10 +12,11 @@ import { FetchJobsForm } from "./_components/fetch-jobs-form";
 import {
   analysisRepository,
   applicationRepository,
+  ingestionRunRepository,
   listJobs,
   searchProfileRepository,
 } from "./_lib/container";
-import { formatDate, formatLocation, isToday } from "./_lib/format";
+import { formatDate, formatLocation, formatRelativeTime, isStale, isToday } from "./_lib/format";
 
 export const metadata: Metadata = { title: "Hunt" };
 
@@ -32,16 +34,46 @@ const STATUS_ORDER = [
 
 const RECENT_OFFERS_LIMIT = 8;
 const STRONG_FIT_LIMIT = 5;
+/** Cron runs daily (09:00 UTC); >36h without one means it's likely broken. */
+const CRON_STALE_MS = 36 * 60 * 60 * 1000;
 
 function publishedDate(job: { publishedAt?: Date; discoveredAt: Date }): Date {
   return job.publishedAt ?? job.discoveredAt;
 }
 
+/** One-line cron health: "Last cron 2h ago · fetched 24 · analyzed 8". */
+function CronHealthLine({ run }: { run: IngestionRun | null }) {
+  if (!run) {
+    return (
+      <p className="text-xs text-muted">
+        No cron runs recorded yet — the first scheduled fetch hasn&apos;t run (or was deployed
+        recently).
+      </p>
+    );
+  }
+  const stale = isStale(run.finishedAt, CRON_STALE_MS);
+  const failed = (run.analysisFailed ?? 0) > 0 || run.errors.length > 0;
+  return (
+    <p className="text-xs text-muted">
+      Last cron{" "}
+      <time dateTime={run.finishedAt.toISOString()}>{formatRelativeTime(run.finishedAt)}</time> ·
+      fetched {run.fetched} · analyzed {run.analysisAnalyzed ?? "—"}
+      {run.errors.length > 0 ? ` · ${run.errors.length} error(s)` : ""}
+      {stale ? (
+        <span className="ml-1 font-medium text-warn">— overdue, cron may be broken</span>
+      ) : failed ? (
+        <span className="ml-1 font-medium text-warn">— finished with errors</span>
+      ) : null}
+    </p>
+  );
+}
+
 export default async function HuntDashboardPage() {
-  const [jobs, applications, profiles] = await Promise.all([
+  const [jobs, applications, profiles, lastCronRun] = await Promise.all([
     listJobs.run(),
     applicationRepository.list(),
     searchProfileRepository.list(),
+    ingestionRunRepository.findLatest("cron"),
   ]);
   const analyses = await analysisRepository.getMany(jobs.map((job) => job.id));
 
@@ -72,6 +104,7 @@ export default async function HuntDashboardPage() {
           <p className="text-sm text-muted">Fresh offers and your active pipeline.</p>
         </div>
         <FetchJobsForm profiles={profiles} />
+        <CronHealthLine run={lastCronRun} />
       </header>
 
       <section aria-label="Summary" className="grid grid-cols-1 gap-4 sm:grid-cols-4">

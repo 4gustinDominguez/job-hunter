@@ -20,10 +20,19 @@ export interface ChatCompleteOptions {
   timeoutMs?: number;
 }
 
+export interface ChatUsage {
+  /** Prompt/input tokens reported by the provider (absent when it doesn't say). */
+  promptTokens?: number;
+  /** Generated/output tokens reported by the provider (absent when it doesn't say). */
+  completionTokens?: number;
+}
+
 export interface ChatResult {
   content: string;
   /** True when the model stopped because of the token limit (output cut short). */
   truncated: boolean;
+  /** Token counts when the provider reports them — surfaced in the [ai] info log. */
+  usage?: ChatUsage;
 }
 
 export class ChatTimeoutError extends Error {
@@ -100,12 +109,25 @@ export class OpenAiCompatibleChat implements ChatClient {
     }
     const payload = (await response.json()) as {
       choices?: Array<{ message?: { content?: unknown }; finish_reason?: unknown }>;
+      usage?: { prompt_tokens?: unknown; completion_tokens?: unknown };
     };
     const choice = payload.choices?.[0];
     const content = choice?.message?.content;
     if (typeof content !== "string" || content.trim() === "") {
       throw new Error("provider returned an empty response");
     }
-    return { content, truncated: choice?.finish_reason === "length" };
+    return {
+      content,
+      truncated: choice?.finish_reason === "length",
+      usage: toUsage(payload.usage?.prompt_tokens, payload.usage?.completion_tokens),
+    };
   }
+}
+
+/** Coerce a provider-reported token count (unknown) to a number, or undefined. */
+function toUsage(prompt: unknown, completion: unknown): ChatResult["usage"] {
+  const promptTokens = typeof prompt === "number" ? prompt : undefined;
+  const completionTokens = typeof completion === "number" ? completion : undefined;
+  if (promptTokens === undefined && completionTokens === undefined) return undefined;
+  return { promptTokens, completionTokens };
 }

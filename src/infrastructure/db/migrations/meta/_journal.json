@@ -29,6 +29,13 @@
       "when": 1792646034700,
       "tag": "0003_tan_the_hand",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793254749366,
+      "tag": "0004_nappy_tana_nile",
+      "breakpoints": true
     }
   ]
 }

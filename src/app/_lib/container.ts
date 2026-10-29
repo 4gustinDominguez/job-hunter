@@ -15,21 +15,28 @@ import {
   UpdateStatus,
 } from "@/application";
 import type { JobSourcePort } from "@/application/ports/job-source-port";
-import { db } from "@/infrastructure/db/client";
+import type { LoggerPort } from "@/application/ports/logger-port";
+import { db, pool } from "@/infrastructure/db/client";
 import { DrizzleAnalysisRepository } from "@/infrastructure/db/drizzle-analysis-repository";
 import { DrizzleApplicationRepository } from "@/infrastructure/db/drizzle-application-repository";
 import { DrizzleCandidateProfileRepository } from "@/infrastructure/db/drizzle-candidate-profile-repository";
 import { DrizzleCompanyRepository } from "@/infrastructure/db/drizzle-company-repository";
 import { DrizzleDocumentRepository } from "@/infrastructure/db/drizzle-document-repository";
+import { DrizzleIngestionRunRepository } from "@/infrastructure/db/drizzle-ingestion-run-repository";
 import { DrizzleJobRepository } from "@/infrastructure/db/drizzle-job-repository";
 import { DrizzleSearchProfileRepository } from "@/infrastructure/db/drizzle-search-profile-repository";
 import { DrizzleUploadedCvRepository } from "@/infrastructure/db/drizzle-uploaded-cv-repository";
 import { createCvExtractor } from "@/infrastructure/ai/create-cv-extractor";
 import { createDocumentGenerator } from "@/infrastructure/ai/create-document-generator";
 import { createJobMatcher } from "@/infrastructure/ai/create-job-matcher";
+import { SentryLogger } from "@/infrastructure/logging/sentry-logger";
 import { ArbeitnowJobSource } from "@/infrastructure/job-sources/arbeitnow/arbeitnow-job-source";
 import { FixtureJobSource } from "@/infrastructure/job-sources/fixture/fixture-job-source";
 import { RemotiveJobSource } from "@/infrastructure/job-sources/remotive/remotive-job-source";
+
+// Re-exported for /api/health's deep DB probe — routes never import
+// infrastructure directly (hexagonal rule); the container is the only seam.
+export { pool };
 
 export const jobRepository = new DrizzleJobRepository(db);
 export const companyRepository = new DrizzleCompanyRepository(db);
@@ -39,9 +46,12 @@ export const searchProfileRepository = new DrizzleSearchProfileRepository(db);
 export const analysisRepository = new DrizzleAnalysisRepository(db);
 export const documentRepository = new DrizzleDocumentRepository(db);
 export const uploadedCvRepository = new DrizzleUploadedCvRepository(db);
-export const cvExtractor = createCvExtractor();
-export const jobMatcher = createJobMatcher();
-export const documentGenerator = createDocumentGenerator();
+export const ingestionRunRepository = new DrizzleIngestionRunRepository(db);
+// Deliberate app logging → Sentry Logs (swappable; no-op without SENTRY_DSN).
+export const logger: LoggerPort = new SentryLogger();
+export const cvExtractor = createCvExtractor(logger);
+export const jobMatcher = createJobMatcher(logger);
+export const documentGenerator = createDocumentGenerator(logger);
 
 function resolveJobSources(): JobSourcePort[] {
   const enabled = new Set(

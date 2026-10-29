@@ -9,10 +9,21 @@ import { ChatTimeoutError, toNetworkError } from "./chat-client";
 
 const DEFAULT_TIMEOUT_MS = 180_000;
 
+/** Coerce a provider-reported token count (unknown) to a number, or undefined. */
+function toUsage(prompt: unknown, completion: unknown): ChatResult["usage"] {
+  const promptTokens = typeof prompt === "number" ? prompt : undefined;
+  const completionTokens = typeof completion === "number" ? completion : undefined;
+  if (promptTokens === undefined && completionTokens === undefined) return undefined;
+  return { promptTokens, completionTokens };
+}
+
 interface OllamaChatResponse {
   message?: { content?: unknown };
   done_reason?: unknown;
   error?: unknown;
+  /** Native route reports real token counts — surfaced in the [ai] info log. */
+  prompt_eval_count?: unknown;
+  eval_count?: unknown;
 }
 
 /**
@@ -72,6 +83,10 @@ export class OllamaNativeChat implements ChatClient {
     if (typeof content !== "string" || content.trim() === "") {
       throw new Error("provider returned an empty response");
     }
-    return { content, truncated: payload.done_reason === "length" };
+    return {
+      content,
+      truncated: payload.done_reason === "length",
+      usage: toUsage(payload.prompt_eval_count, payload.eval_count),
+    };
   }
 }

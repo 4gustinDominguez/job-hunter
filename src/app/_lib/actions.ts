@@ -31,6 +31,7 @@ import {
   updateStatus,
   uploadedCvRepository,
 } from "./container";
+import { recordIngestionRun } from "./ingestion-run";
 import type {
   DocumentActionState,
   FetchJobsState,
@@ -143,6 +144,7 @@ export async function fetchJobsAction(
   // returns immediately instead of freezing the page until it all completes
   // (user feedback 2026-10-23).
   after(async () => {
+    const startedAt = new Date();
     try {
       const result = await ingestJobs.run(criteria);
       const prefilter = await prefilterJobs.run();
@@ -152,6 +154,20 @@ export async function fetchJobsAction(
       for (const error of result.errors) {
         console.error(`[fetch-jobs] source error — ${error.source}: ${error.message}`);
       }
+      await recordIngestionRun({
+        trigger: "manual",
+        startedAt,
+        fetched: result.fetched,
+        created: result.created,
+        attached: result.attached,
+        skipped: result.skipped,
+        prefilterPending: prefilter.pending,
+        prefilterSkipped: prefilter.skipped,
+        // Manual fetch runs ingest + prefilter only (no analysis batch).
+        analysisAnalyzed: null,
+        analysisFailed: null,
+        errors: result.errors.map((error) => `${error.source}: ${error.message}`),
+      });
     } catch (error) {
       console.error("[fetch-jobs] background ingestion failed:", error);
     }
