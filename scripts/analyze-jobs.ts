@@ -1,6 +1,15 @@
 import { analyzePendingJobs, prefilterJobs } from "../src/app/_lib/container";
 
 async function main(): Promise<void> {
+  // The script runs as a bare node process (pnpm analyze-jobs), so Next's
+  // instrumentation.ts register() never fires here and Sentry is never booted.
+  // Init it manually (no-op without SENTRY_DSN) so the LLM-call logs that
+  // LoggedChat emits actually reach Sentry instead of vanishing. Must run
+  // before any analysis call.
+  if (process.env.SENTRY_DSN) {
+    await import("../src/sentry.server.config");
+  }
+
   const prefilter = await prefilterJobs.run();
   if (prefilter.hasProfile) {
     console.log(
@@ -19,6 +28,14 @@ async function main(): Promise<void> {
       console.error(`  [${error.title}] ${error.message}`);
     }
     process.exitCode = 1;
+  }
+
+  // Sentry ships logs/events in async batches; this process is short-lived, so
+  // flush before exiting or the [ai] call logs never leave the box. No-op
+  // without SENTRY_DSN.
+  if (process.env.SENTRY_DSN) {
+    const Sentry = await import("@sentry/nextjs");
+    await Sentry.flush(5000);
   }
 }
 
