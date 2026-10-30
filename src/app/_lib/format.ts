@@ -10,6 +10,15 @@ export function formatDate(date: Date): string {
   return dateFormat.format(date);
 }
 
+const monthYearFormat = new Intl.DateTimeFormat("en-GB", { month: "short", year: "numeric" });
+
+/** "Mar 2022 – Present" / "Sep 2015 – Jun 2019" — CV-style month-year range. */
+export function formatDateRange(startDate: Date, endDate?: Date): string {
+  const start = monthYearFormat.format(startDate);
+  const end = endDate ? monthYearFormat.format(endDate) : "Present";
+  return `${start} – ${end}`;
+}
+
 export function isToday(date: Date): boolean {
   return date.toDateString() === new Date().toDateString();
 }

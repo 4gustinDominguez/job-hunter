@@ -18,11 +18,21 @@ export default async function ProfilePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="text-2xl font-semibold">Profile</h1>
-        <p className="text-sm text-muted">
-          Your professional data — the source of truth for applications.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Profile</h1>
+          <p className="text-sm text-muted">
+            Your professional data — the source of truth for applications.
+          </p>
+        </div>
+        <a
+          href="/cv"
+          target="_blank"
+          rel="noreferrer"
+          className="shrink-0 rounded-md border border-line px-3 py-1.5 text-xs font-medium hover:border-accent hover:text-accent-strong"
+        >
+          View public CV ↗
+        </a>
       </header>
 
       <section
