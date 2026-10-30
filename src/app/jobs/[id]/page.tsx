@@ -152,7 +152,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
       </Link>
 
       <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">{job.title}</h1>
+        <h1 className="text-2xl font-semibold wrap-anywhere">{job.title}</h1>
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted">
           <span className="font-medium text-ink">{job.company.name}</span>
           <span aria-hidden="true">·</span>
@@ -176,8 +176,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         </div>
       </header>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_16rem]">
-        <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
+        <div className="flex min-w-0 flex-col gap-6">
           <section
             aria-label="Fit analysis"
             className="rounded-lg border border-line bg-surface p-5"
