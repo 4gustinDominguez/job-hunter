@@ -21,13 +21,6 @@ const SKILL_CATEGORY_ORDER: SkillCategory[] = [
   "LANGUAGE",
 ];
 
-const SKILL_LEVEL_HINTS: Record<string, string> = {
-  BEGINNER: "Beginner",
-  INTERMEDIATE: "Intermediate",
-  ADVANCED: "Advanced",
-  EXPERT: "Expert",
-};
-
 export async function generateMetadata(): Promise<Metadata> {
   const profile = await candidateProfileRepository.findFirst();
   const name = profile?.name?.trim();
@@ -45,7 +38,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function SkillChips({ skills }: { skills: { id: string; name: string; level: string }[] }) {
+function SkillChips({ skills }: { skills: { id: string; name: string }[] }) {
   return (
     <ul className="flex flex-wrap gap-1.5">
       {skills.map((skill) => (
@@ -54,8 +47,6 @@ function SkillChips({ skills }: { skills: { id: string; name: string; level: str
           className="rounded-full border border-line bg-paper px-2.5 py-0.5 text-xs text-muted"
         >
           {skill.name}
-          <span className="text-line"> · </span>
-          <span className="text-ink/70">{SKILL_LEVEL_HINTS[skill.level] ?? skill.level}</span>
         </li>
       ))}
     </ul>
