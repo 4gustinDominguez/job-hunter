@@ -68,6 +68,139 @@ describe("prefilterJob", () => {
     expect(decision.reason).toContain("remote");
   });
 
+  it("skips fake remote bound to the US when the profile requires remote", () => {
+    const remoteProfile = makeProfile({
+      preferences: { ...profile.preferences, remotePreference: "REMOTE" },
+    });
+    const job = makeJob({
+      title: "Full Stack Developer",
+      description: "TypeScript React role.",
+      remoteType: "REMOTE",
+      location: { country: "United States", isRemote: true },
+    });
+
+    const decision = prefilterJob(job, remoteProfile);
+    expect(decision.pass).toBe(false);
+    expect(decision.reason).toBe("remote restricted to United States");
+  });
+
+  it("skips fake remote bound to Canada when the profile requires remote", () => {
+    const remoteProfile = makeProfile({
+      preferences: { ...profile.preferences, remotePreference: "REMOTE" },
+    });
+    const job = makeJob({
+      title: "Full Stack Developer",
+      description: "TypeScript React role.",
+      remoteType: "REMOTE",
+      location: { country: "Canada", isRemote: true },
+    });
+
+    const decision = prefilterJob(job, remoteProfile);
+    expect(decision.pass).toBe(false);
+    expect(decision.reason).toBe("remote restricted to Canada");
+  });
+
+  it("passes remote scoped to a non-North-American country (e.g. Germany)", () => {
+    const remoteProfile = makeProfile({
+      preferences: { ...profile.preferences, remotePreference: "REMOTE" },
+    });
+    const job = makeJob({
+      title: "Full Stack Developer",
+      description: "TypeScript React role.",
+      remoteType: "REMOTE",
+      location: { country: "Germany", isRemote: true },
+    });
+
+    expect(prefilterJob(job, remoteProfile).pass).toBe(true);
+  });
+
+  it("passes a North-America-only region scope as fake remote (USA, Canada…)", () => {
+    const remoteProfile = makeProfile({
+      preferences: { ...profile.preferences, remotePreference: "REMOTE" },
+    });
+    const job = makeJob({
+      title: "Full Stack Developer",
+      description: "TypeScript React role.",
+      remoteType: "REMOTE",
+      location: { region: "USA, Canada, USA timezones", isRemote: true },
+    });
+
+    const decision = prefilterJob(job, remoteProfile);
+    expect(decision.pass).toBe(false);
+    expect(decision.reason).toBe("remote restricted to North America");
+  });
+
+  it("passes a multi-region scope that includes North America (not fake remote)", () => {
+    const remoteProfile = makeProfile({
+      preferences: { ...profile.preferences, remotePreference: "REMOTE" },
+    });
+    const job = makeJob({
+      title: "Full Stack Developer",
+      description: "TypeScript React role.",
+      remoteType: "REMOTE",
+      location: { region: "Europe, USA, Canada, Australia", isRemote: true },
+    });
+
+    expect(prefilterJob(job, remoteProfile).pass).toBe(true);
+  });
+
+  it("detects a US-only constraint hidden in the description when the field says worldwide", () => {
+    const remoteProfile = makeProfile({
+      preferences: { ...profile.preferences, remotePreference: "REMOTE" },
+    });
+    const job = makeJob({
+      title: "Full Stack Developer",
+      description: "TypeScript React role. Candidates must be based in the US.",
+      remoteType: "REMOTE",
+      location: { isRemote: true },
+    });
+
+    const decision = prefilterJob(job, remoteProfile);
+    expect(decision.pass).toBe(false);
+    expect(decision.reason).toBe("remote restricted to United States");
+  });
+
+  it("does not flag remote jobs when the profile does not require remote", () => {
+    // Default profile is remotePreference: "ANY" — a US-scoped remote passes.
+    const job = makeJob({
+      title: "Full Stack Developer",
+      description: "TypeScript React role.",
+      remoteType: "REMOTE",
+      location: { country: "United States", isRemote: true },
+    });
+
+    expect(prefilterJob(job, profile).pass).toBe(true);
+  });
+
+  it("skips hybrid jobs when the profile requires full remote", () => {
+    const remoteProfile = makeProfile({
+      preferences: { ...profile.preferences, remotePreference: "REMOTE" },
+    });
+    const job = makeJob({
+      title: "Full Stack Developer",
+      description: "TypeScript React role.",
+      remoteType: "HYBRID",
+    });
+
+    const decision = prefilterJob(job, remoteProfile);
+    expect(decision.pass).toBe(false);
+    expect(decision.reason).toContain("hybrid");
+  });
+
+  it("passes worldwide remote when the profile requires full remote", () => {
+    const remoteProfile = makeProfile({
+      preferences: { ...profile.preferences, remotePreference: "REMOTE" },
+    });
+    const job = makeJob({
+      title: "Full Stack Developer",
+      description: "TypeScript React role.",
+      remoteType: "REMOTE",
+      location: { isRemote: true },
+    });
+
+    expect(prefilterJob(job, remoteProfile).pass).toBe(true);
+  });
+
   it("skips when the job salary maximum is below the profile minimum", () => {
     const job = makeJob({
       title: "Full Stack Developer",

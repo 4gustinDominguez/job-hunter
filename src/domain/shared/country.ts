@@ -288,9 +288,10 @@ const WORLDWIDE_PATTERN =
 
 // Regional scopes ("Europe", "EMEA") are not countries but must survive for
 // display and geo filtering — stored as region, never as country or city.
-const REGION_SCOPE_PATTERN = /^(europe|eu|emea|european union|apac|asia pacific|latin america)$/i;
+export const REGION_SCOPE_PATTERN =
+  /^(europe|eu|emea|european union|apac|asia pacific|latin america)$/i;
 
-const PLACE_SEPARATOR = /\s*(?:,|;|·|\||\/|–|—|-)\s*/;
+export const PLACE_SEPARATOR = /\s*(?:,|;|·|\||\/|–|—|-)\s*/;
 
 const EUROPEAN_COUNTRY_NAMES = [
   "Germany",
