@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ApplicationQuestions } from "../../_components/application-questions";
+import {
+  ApplicationQuestions,
+  type ResolvedSimilarityMatch,
+  type SimilarityRow,
+} from "../../_components/application-questions";
 import { DocumentEditor } from "../../_components/document-editor";
 import { GenerateDocButtons } from "../../_components/generate-doc-buttons";
 import { StatusBadge } from "../../_components/badges";
@@ -11,12 +15,79 @@ import {
   candidateProfileRepository,
   documentRepository,
   getJob,
+  questionSimilarityRepository,
 } from "../../_lib/container";
 import { findUnsupportedClaims } from "@/application";
 import { formatDate } from "../../_lib/format";
 import { DOCUMENT_KINDS } from "@/domain/documents/generated-document";
 
 const NO_WARNINGS: readonly string[] = [];
+const NO_SIMILARITY: Record<string, SimilarityRow> = {};
+
+/**
+ * Turn persisted similarity records into renderable rows: resolve each matched
+ * questionId against the CURRENT question text/answer (answers may have been
+ * edited since the analysis) and label the source offer as "Company — Title".
+ * Matches whose question was deleted since are dropped.
+ */
+async function resolveSimilarity(questionIds: string[]): Promise<Record<string, SimilarityRow>> {
+  const rows: Record<string, SimilarityRow> = {};
+  if (questionIds.length === 0) return rows;
+
+  const [records, answered] = await Promise.all([
+    questionSimilarityRepository.getMany(questionIds),
+    applicationQuestionRepository.listAnswered(undefined, 150),
+  ]);
+
+  const matchedIds = [
+    ...new Set([...records.values()].flatMap((r) => r.matches.map((m) => m.questionId))),
+  ];
+  const matchedQuestions =
+    matchedIds.length > 0 ? await applicationQuestionRepository.getMany(matchedIds) : [];
+  const matchedById = new Map(matchedQuestions.map((q) => [q.id, q]));
+
+  // Source labels: matched question → its application → its job/company.
+  const sourceByQuestion = new Map<string, string>();
+  const appIds = [...new Set(matchedQuestions.map((q) => q.applicationId))];
+  const apps = await Promise.all(appIds.map((appId) => applicationRepository.getById(appId)));
+  const jobIds = [...new Set(apps.filter((a) => a !== null).map((a) => a!.jobId))];
+  const jobs = await Promise.all(jobIds.map((jobId) => getJob.run(jobId)));
+  const jobById = new Map(jobs.filter((j) => j !== null).map((j) => [j!.id, j!]));
+  for (const question of matchedQuestions) {
+    const app = apps.find((a) => a?.id === question.applicationId);
+    const matchedJob = app ? jobById.get(app.jobId) : undefined;
+    sourceByQuestion.set(
+      question.id,
+      matchedJob ? `${matchedJob.company.name} — ${matchedJob.title}` : "Previous process",
+    );
+  }
+
+  const answeredIds = new Set(answered.map((q) => q.id));
+  for (const questionId of questionIds) {
+    const record = records.get(questionId);
+    const matches: ResolvedSimilarityMatch[] = (record?.matches ?? []).flatMap((match) => {
+      const matched = matchedById.get(match.questionId);
+      if (!matched) return [];
+      return [
+        {
+          questionId: matched.id,
+          reason: match.reason,
+          question: matched.question,
+          answer: matched.answer,
+          source: sourceByQuestion.get(matched.id) ?? "Previous process",
+        },
+      ];
+    });
+    // Button shows when at least one OTHER answered question exists (incl. siblings).
+    const otherAnswered = [...answeredIds].some((id) => id !== questionId);
+    rows[questionId] = {
+      hasAnalysis: record !== undefined,
+      matches,
+      canFindSimilar: otherAnswered,
+    };
+  }
+  return rows;
+}
 
 export async function generateMetadata({
   params,
@@ -51,6 +122,11 @@ export default async function ApplicationDetailPage({
   if (!job) {
     notFound();
   }
+
+  const similarity =
+    application.status === "INTERESTED" && questions.length > 0
+      ? await resolveSimilarity(questions.map((question) => question.id))
+      : NO_SIMILARITY;
 
   const byKind = new Map(documents.map((doc) => [doc.kind, doc]));
   const presentKinds = DOCUMENT_KINDS.filter((kind) => byKind.has(kind));
@@ -90,7 +166,11 @@ export default async function ApplicationDetailPage({
       />
 
       {application.status === "INTERESTED" ? (
-        <ApplicationQuestions applicationId={application.id} questions={questions} />
+        <ApplicationQuestions
+          applicationId={application.id}
+          questions={questions}
+          similarity={similarity}
+        />
       ) : null}
 
       <div className="flex flex-col gap-5">

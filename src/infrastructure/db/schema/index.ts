@@ -6,6 +6,7 @@ import { candidateProfiles, profileSkills } from "./candidate";
 import { companies } from "./companies";
 import { jobAnalyses } from "./job-analyses";
 import { jobListings, jobs } from "./jobs";
+import { questionSimilarities } from "./question-similarities";
 
 export * from "./application-documents";
 export * from "./application-questions";
@@ -16,6 +17,7 @@ export * from "./ingestion-runs";
 export * from "./integration-settings";
 export * from "./job-analyses";
 export * from "./jobs";
+export * from "./question-similarities";
 export * from "./search-profiles";
 export * from "./uploaded-cvs";
 
@@ -64,6 +66,17 @@ export const applicationQuestionsRelations = relations(applicationQuestions, ({ 
   application: one(applications, {
     fields: [applicationQuestions.applicationId],
     references: [applications.id],
+  }),
+  similarity: one(questionSimilarities, {
+    fields: [applicationQuestions.id],
+    references: [questionSimilarities.questionId],
+  }),
+}));
+
+export const questionSimilaritiesRelations = relations(questionSimilarities, ({ one }) => ({
+  question: one(applicationQuestions, {
+    fields: [questionSimilarities.questionId],
+    references: [applicationQuestions.id],
   }),
 }));
 

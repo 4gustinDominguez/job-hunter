@@ -1,4 +1,4 @@
-import { asc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, ne, sql } from "drizzle-orm";
 import { NotFoundError } from "@/application/errors";
 import type {
   ApplicationQuestionRepositoryPort,
@@ -83,5 +83,31 @@ export class DrizzleApplicationQuestionRepository implements ApplicationQuestion
 
   async remove(id: string): Promise<void> {
     await this.database.delete(applicationQuestions).where(eq(applicationQuestions.id, id));
+  }
+
+  async listAnswered(excludeQuestionId?: string, limit = 150): Promise<ApplicationQuestion[]> {
+    const conditions = [
+      isNotNull(applicationQuestions.answer),
+      ne(sql`btrim(${applicationQuestions.answer})`, ""),
+    ];
+    if (excludeQuestionId !== undefined) {
+      conditions.push(ne(applicationQuestions.id, excludeQuestionId));
+    }
+    const rows = await this.database
+      .select()
+      .from(applicationQuestions)
+      .where(and(...conditions))
+      .orderBy(desc(applicationQuestions.createdAt))
+      .limit(limit);
+    return rows.map(toDomain);
+  }
+
+  async getMany(ids: string[]): Promise<ApplicationQuestion[]> {
+    if (ids.length === 0) return [];
+    const rows = await this.database
+      .select()
+      .from(applicationQuestions)
+      .where(inArray(applicationQuestions.id, ids));
+    return rows.map(toDomain);
   }
 }

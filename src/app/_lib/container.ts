@@ -6,6 +6,7 @@ import {
   CreateApplication,
   DeleteApplicationQuestion,
   DeleteSearchProfile,
+  FindQuestionSimilarities,
   GenerateApplicationDocument,
   GetJob,
   IngestJobs,
@@ -25,6 +26,7 @@ import { db, pool } from "@/infrastructure/db/client";
 import { DrizzleAnalysisRepository } from "@/infrastructure/db/drizzle-analysis-repository";
 import { DrizzleApplicationQuestionRepository } from "@/infrastructure/db/drizzle-application-question-repository";
 import { DrizzleApplicationRepository } from "@/infrastructure/db/drizzle-application-repository";
+import { DrizzleQuestionSimilarityRepository } from "@/infrastructure/db/drizzle-question-similarity-repository";
 import { DrizzleCandidateProfileRepository } from "@/infrastructure/db/drizzle-candidate-profile-repository";
 import { DrizzleCompanyRepository } from "@/infrastructure/db/drizzle-company-repository";
 import { DrizzleDocumentRepository } from "@/infrastructure/db/drizzle-document-repository";
@@ -36,6 +38,7 @@ import { DrizzleUploadedCvRepository } from "@/infrastructure/db/drizzle-uploade
 import { createCvExtractor } from "@/infrastructure/ai/create-cv-extractor";
 import { createDocumentGenerator } from "@/infrastructure/ai/create-document-generator";
 import { createJobMatcher } from "@/infrastructure/ai/create-job-matcher";
+import { createQuestionSimilarityAnalyzer } from "@/infrastructure/ai/create-question-similarity";
 import { SentryLogger } from "@/infrastructure/logging/sentry-logger";
 import { ArbeitnowJobSource } from "@/infrastructure/job-sources/arbeitnow/arbeitnow-job-source";
 import { FixtureJobSource } from "@/infrastructure/job-sources/fixture/fixture-job-source";
@@ -53,6 +56,7 @@ export const jobRepository = new DrizzleJobRepository(db);
 export const companyRepository = new DrizzleCompanyRepository(db);
 export const applicationRepository = new DrizzleApplicationRepository(db);
 export const applicationQuestionRepository = new DrizzleApplicationQuestionRepository(db);
+export const questionSimilarityRepository = new DrizzleQuestionSimilarityRepository(db);
 export const candidateProfileRepository = new DrizzleCandidateProfileRepository(db);
 export const searchProfileRepository = new DrizzleSearchProfileRepository(db);
 export const analysisRepository = new DrizzleAnalysisRepository(db);
@@ -65,6 +69,7 @@ export const logger: LoggerPort = new SentryLogger();
 export const cvExtractor = createCvExtractor(logger);
 export const jobMatcher = createJobMatcher(logger);
 export const documentGenerator = createDocumentGenerator(logger);
+export const questionSimilarityAnalyzer = createQuestionSimilarityAnalyzer(logger);
 
 // Settings read at request time: rows from /integrations win, env is the
 // fallback when a provider has never been configured.
@@ -128,6 +133,11 @@ export const saveApplicationQuestionAnswer = new SaveApplicationQuestionAnswer(
 );
 export const deleteApplicationQuestion = new DeleteApplicationQuestion(
   applicationQuestionRepository,
+);
+export const findQuestionSimilarities = new FindQuestionSimilarities(
+  applicationQuestionRepository,
+  questionSimilarityRepository,
+  questionSimilarityAnalyzer,
 );
 export const saveProfile = new SaveProfile(candidateProfileRepository);
 export const saveSearchProfile = new SaveSearchProfile(searchProfileRepository);

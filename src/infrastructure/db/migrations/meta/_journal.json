@@ -57,6 +57,13 @@
       "when": 1793727383321,
       "tag": "0007_early_sumo",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793734446616,
+      "tag": "0008_striped_ultimo",
+      "breakpoints": true
     }
   ]
 }

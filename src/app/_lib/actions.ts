@@ -5,6 +5,7 @@ import { revalidatePath, refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import type { SaveProfileInput } from "@/application";
 import {
+  AnalysisError,
   CvExtractionError,
   DocumentGenerationError,
   NotFoundError,
@@ -25,6 +26,7 @@ import {
   cvExtractor,
   deleteApplicationQuestion,
   deleteSearchProfile,
+  findQuestionSimilarities,
   generateApplicationDocument,
   ingestJobs,
   ingestionRunRepository,
@@ -329,6 +331,36 @@ export async function deleteApplicationQuestionAction(formData: FormData): Promi
     throw error;
   }
   refresh();
+}
+
+export async function findSimilarQuestionsAction(
+  _prevState: ApplicationQuestionsState,
+  formData: FormData,
+): Promise<ApplicationQuestionsState> {
+  await requireSession();
+  const questionId = String(formData.get("questionId") ?? "");
+  try {
+    const record = await findQuestionSimilarities.run(questionId);
+    refresh();
+    return {
+      message:
+        record.matches.length > 0
+          ? `Found ${record.matches.length} similar question${record.matches.length === 1 ? "" : "s"}.`
+          : "No similar questions found in previous answers.",
+    };
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof NotFoundError) {
+      return { message: error.message, error: true };
+    }
+    if (error instanceof AnalysisError) {
+      return { message: error.message, error: true };
+    }
+    console.warn("[similarity] find similar failed:", error);
+    return {
+      message: "Searching for similar questions failed unexpectedly. Try again.",
+      error: true,
+    };
+  }
 }
 
 const MAX_CV_BYTES = 3 * 1024 * 1024;

@@ -56,4 +56,20 @@ export class InMemoryApplicationQuestionRepository implements ApplicationQuestio
   async remove(id: string): Promise<void> {
     this.items.delete(id);
   }
+
+  async listAnswered(excludeQuestionId?: string, limit = 150): Promise<ApplicationQuestion[]> {
+    return [...this.items.values()]
+      .filter(
+        (item) =>
+          item.answer !== undefined && item.answer.trim() !== "" && item.id !== excludeQuestionId,
+      )
+      .toSorted((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, limit);
+  }
+
+  async getMany(ids: string[]): Promise<ApplicationQuestion[]> {
+    return ids
+      .map((id) => this.items.get(id))
+      .filter((item): item is ApplicationQuestion => item !== undefined);
+  }
 }

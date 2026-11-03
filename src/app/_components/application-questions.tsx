@@ -6,6 +6,7 @@ import { useActionState, useState, type FormEvent, type MouseEvent } from "react
 import {
   addApplicationQuestionsAction,
   deleteApplicationQuestionAction,
+  findSimilarQuestionsAction,
   saveApplicationQuestionAnswerAction,
 } from "@/app/_lib/actions";
 import type { ApplicationQuestionsState } from "@/app/_lib/schemas";
@@ -17,11 +18,35 @@ interface DraftRow {
   answer: string;
 }
 
+/** A matched question from the corpus, resolved to its current text + source offer. */
+export interface ResolvedSimilarityMatch {
+  questionId: string;
+  reason: string;
+  question: string;
+  answer?: string;
+  /** "Company — Job title" of the offer where the match was answered. */
+  source: string;
+}
+
+/** Per-question similarity state, resolved server-side by the detail page. */
+export interface SimilarityRow {
+  /** True when an analysis was run before (even if it found nothing). */
+  hasAnalysis: boolean;
+  matches: readonly ResolvedSimilarityMatch[];
+  /** False when no other answered question exists — the button stays hidden. */
+  canFindSimilar: boolean;
+}
+
 const TEXTAREA = "w-full rounded-md border border-line bg-paper px-3 py-2 text-sm leading-relaxed";
 const PRIMARY_BUTTON =
   "rounded-md bg-ink px-3 py-1.5 text-xs font-medium text-white hover:bg-black disabled:opacity-60";
 const GHOST_BUTTON =
   "rounded-md border border-line px-3 py-1.5 text-xs font-medium hover:border-accent hover:text-accent-strong";
+const NO_SIMILARITY: SimilarityRow = {
+  hasAnalysis: false,
+  matches: [],
+  canFindSimilar: false,
+};
 
 function confirmDelete(event: MouseEvent<HTMLButtonElement>): void {
   if (!window.confirm("Delete this question and its answer?")) {
@@ -29,10 +54,38 @@ function confirmDelete(event: MouseEvent<HTMLButtonElement>): void {
   }
 }
 
-function QuestionRow({ question }: { question: ApplicationQuestion }) {
+function MatchCard({ match }: { match: ResolvedSimilarityMatch }) {
+  return (
+    <li className="flex flex-col gap-1.5 border-l-2 border-accent pl-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
+        <p className="text-sm font-medium leading-relaxed">{match.question}</p>
+        <span className="shrink-0 text-[11px] text-muted">{match.source}</span>
+      </div>
+      {match.answer ? (
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted">{match.answer}</p>
+      ) : (
+        <p className="text-xs text-muted italic">No answer recorded for this one.</p>
+      )}
+      <p className="text-xs italic text-accent-strong">{match.reason}</p>
+    </li>
+  );
+}
+
+function QuestionRow({
+  question,
+  similarity,
+}: {
+  question: ApplicationQuestion;
+  similarity: SimilarityRow;
+}) {
   const [state, saveAction, saving] = useActionState(saveApplicationQuestionAnswerAction, {
     message: "",
   });
+  const [findState, findAction, finding] = useActionState(findSimilarQuestionsAction, {
+    message: "",
+  });
+
+  const hasMatches = similarity.matches.length > 0;
 
   return (
     <li className="flex flex-col gap-2 rounded-md border border-line bg-paper p-3">
@@ -76,6 +129,44 @@ function QuestionRow({ question }: { question: ApplicationQuestion }) {
           ) : null}
         </div>
       </form>
+
+      {similarity.canFindSimilar ? (
+        <form action={findAction} className="flex flex-wrap items-center gap-2">
+          <input type="hidden" name="questionId" value={question.id} />
+          <button type="submit" disabled={finding} className={GHOST_BUTTON}>
+            {finding
+              ? "Searching previous answers…"
+              : hasMatches || similarity.hasAnalysis
+                ? "Re-run similarity"
+                : "Find similar"}
+          </button>
+          {findState.message ? (
+            <output
+              aria-live="polite"
+              className={findState.error ? "text-xs text-danger" : "text-xs text-accent-strong"}
+            >
+              {findState.message}
+            </output>
+          ) : null}
+        </form>
+      ) : null}
+
+      {hasMatches ? (
+        <section aria-label="Similar previous questions" className="flex flex-col gap-2.5 pt-1">
+          <h3 className="text-xs font-medium text-muted">
+            Similar questions from previous processes ({similarity.matches.length})
+          </h3>
+          <ul className="flex flex-col gap-3">
+            {similarity.matches.map((match) => (
+              <MatchCard key={match.questionId} match={match} />
+            ))}
+          </ul>
+        </section>
+      ) : similarity.hasAnalysis && similarity.canFindSimilar ? (
+        <p className="text-xs text-muted italic">
+          No similar questions found among previous answers.
+        </p>
+      ) : null}
     </li>
   );
 }
@@ -83,9 +174,11 @@ function QuestionRow({ question }: { question: ApplicationQuestion }) {
 export function ApplicationQuestions({
   applicationId,
   questions,
+  similarity,
 }: {
   applicationId: string;
   questions: readonly ApplicationQuestion[];
+  similarity: Record<string, SimilarityRow>;
 }) {
   const [drafts, setDrafts] = useState<DraftRow[]>([]);
   const [addState, addAction, adding] = useActionState(addQuestions, {
@@ -144,7 +237,11 @@ export function ApplicationQuestions({
       {questions.length > 0 ? (
         <ul className="flex flex-col gap-3">
           {questions.map((question) => (
-            <QuestionRow key={question.id} question={question} />
+            <QuestionRow
+              key={question.id}
+              question={question}
+              similarity={similarity[question.id] ?? NO_SIMILARITY}
+            />
           ))}
         </ul>
       ) : null}
