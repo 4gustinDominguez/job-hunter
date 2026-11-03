@@ -110,6 +110,11 @@ export interface DocumentActionState {
   error?: boolean;
 }
 
+export interface ApplicationQuestionsState {
+  message: string;
+  error?: boolean;
+}
+
 export const integrationSettingsFormSchema = z.object({
   provider: z.enum(MANAGED_JOB_SOURCES),
   enabled: z.boolean(),

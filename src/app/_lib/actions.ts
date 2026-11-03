@@ -17,11 +17,13 @@ import type { ApplicationStatus } from "@/domain/application/enums";
 import type { DocumentKind } from "@/domain/documents/generated-document";
 import type { JobSearchCriteria } from "@/domain/search/search-profile";
 import {
+  addApplicationQuestions,
   addJobNote,
   analyzeJobFit,
   applicationRepository,
   createApplication,
   cvExtractor,
+  deleteApplicationQuestion,
   deleteSearchProfile,
   generateApplicationDocument,
   ingestJobs,
@@ -29,6 +31,7 @@ import {
   jobRepository,
   prefilterJobs,
   saveApplicationDocument,
+  saveApplicationQuestionAnswer,
   saveIntegrationSettings,
   saveProfile,
   saveSearchProfile,
@@ -37,6 +40,7 @@ import {
   uploadedCvRepository,
 } from "./container";
 import type {
+  ApplicationQuestionsState,
   DocumentActionState,
   FetchJobsState,
   ImportCvState,
@@ -267,6 +271,63 @@ export async function addNoteAction(formData: FormData): Promise<void> {
     throw new NotFoundError("Application", id);
   }
   await updateStatus.run(id, current.status, { note });
+  refresh();
+}
+
+export async function addApplicationQuestionsAction(
+  _prevState: ApplicationQuestionsState,
+  formData: FormData,
+): Promise<ApplicationQuestionsState> {
+  await requireSession();
+  const applicationId = String(formData.get("applicationId") ?? "");
+  // Dynamic rows: repeated `question[]`/`answer[]` fields, one pair per row.
+  const questions = formData.getAll("question").map(String);
+  const answers = formData.getAll("answer").map(String);
+  try {
+    const added = await addApplicationQuestions.run(
+      applicationId,
+      questions.map((question, index) => ({ question, answer: answers[index] ?? "" })),
+    );
+    refresh();
+    return { message: `Added ${added.length} question${added.length === 1 ? "" : "s"}.` };
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof NotFoundError) {
+      return { message: error.message, error: true };
+    }
+    console.warn("[questions] add failed:", error);
+    return { message: "Adding questions failed unexpectedly. Try again.", error: true };
+  }
+}
+
+export async function saveApplicationQuestionAnswerAction(
+  _prevState: ApplicationQuestionsState,
+  formData: FormData,
+): Promise<ApplicationQuestionsState> {
+  await requireSession();
+  const questionId = String(formData.get("questionId") ?? "");
+  const answer = String(formData.get("answer") ?? "");
+  try {
+    await saveApplicationQuestionAnswer.run(questionId, answer);
+    refresh();
+    return { message: "Answer saved." };
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof NotFoundError) {
+      return { message: error.message, error: true };
+    }
+    console.warn("[questions] save answer failed:", error);
+    return { message: "Saving the answer failed unexpectedly. Try again.", error: true };
+  }
+}
+
+export async function deleteApplicationQuestionAction(formData: FormData): Promise<void> {
+  await requireSession();
+  const questionId = String(formData.get("questionId") ?? "");
+  try {
+    await deleteApplicationQuestion.run(questionId);
+  } catch (error) {
+    if (error instanceof NotFoundError) return; // already gone — nothing to do
+    throw error;
+  }
   refresh();
 }
 

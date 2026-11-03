@@ -1,8 +1,10 @@
 import {
+  AddApplicationQuestions,
   AddJobNote,
   AnalyzeJobFit,
   AnalyzePendingJobs,
   CreateApplication,
+  DeleteApplicationQuestion,
   DeleteSearchProfile,
   GenerateApplicationDocument,
   GetJob,
@@ -10,6 +12,7 @@ import {
   ListJobs,
   PrefilterJobs,
   SaveApplicationDocument,
+  SaveApplicationQuestionAnswer,
   SaveIntegrationSettings,
   SaveProfile,
   SaveSearchProfile,
@@ -20,6 +23,7 @@ import type { JobSourcePort } from "@/application/ports/job-source-port";
 import type { LoggerPort } from "@/application/ports/logger-port";
 import { db, pool } from "@/infrastructure/db/client";
 import { DrizzleAnalysisRepository } from "@/infrastructure/db/drizzle-analysis-repository";
+import { DrizzleApplicationQuestionRepository } from "@/infrastructure/db/drizzle-application-question-repository";
 import { DrizzleApplicationRepository } from "@/infrastructure/db/drizzle-application-repository";
 import { DrizzleCandidateProfileRepository } from "@/infrastructure/db/drizzle-candidate-profile-repository";
 import { DrizzleCompanyRepository } from "@/infrastructure/db/drizzle-company-repository";
@@ -48,6 +52,7 @@ export { pool };
 export const jobRepository = new DrizzleJobRepository(db);
 export const companyRepository = new DrizzleCompanyRepository(db);
 export const applicationRepository = new DrizzleApplicationRepository(db);
+export const applicationQuestionRepository = new DrizzleApplicationQuestionRepository(db);
 export const candidateProfileRepository = new DrizzleCandidateProfileRepository(db);
 export const searchProfileRepository = new DrizzleSearchProfileRepository(db);
 export const analysisRepository = new DrizzleAnalysisRepository(db);
@@ -114,6 +119,16 @@ export const listJobs = new ListJobs(jobRepository);
 export const getJob = new GetJob(jobRepository);
 export const createApplication = new CreateApplication(applicationRepository, jobRepository);
 export const updateStatus = new UpdateStatus(applicationRepository);
+export const addApplicationQuestions = new AddApplicationQuestions(
+  applicationQuestionRepository,
+  applicationRepository,
+);
+export const saveApplicationQuestionAnswer = new SaveApplicationQuestionAnswer(
+  applicationQuestionRepository,
+);
+export const deleteApplicationQuestion = new DeleteApplicationQuestion(
+  applicationQuestionRepository,
+);
 export const saveProfile = new SaveProfile(candidateProfileRepository);
 export const saveSearchProfile = new SaveSearchProfile(searchProfileRepository);
 export const deleteSearchProfile = new DeleteSearchProfile(searchProfileRepository);

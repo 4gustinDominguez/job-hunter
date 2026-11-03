@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import { applicationDocuments } from "./application-documents";
+import { applicationQuestions } from "./application-questions";
 import { applications, contacts } from "./applications";
 import { candidateProfiles, profileSkills } from "./candidate";
 import { companies } from "./companies";
@@ -7,6 +8,7 @@ import { jobAnalyses } from "./job-analyses";
 import { jobListings, jobs } from "./jobs";
 
 export * from "./application-documents";
+export * from "./application-questions";
 export * from "./applications";
 export * from "./candidate";
 export * from "./companies";
@@ -55,6 +57,14 @@ export const applicationsRelations = relations(applications, ({ one, many }) => 
     references: [contacts.id],
   }),
   documents: many(applicationDocuments),
+  questions: many(applicationQuestions),
+}));
+
+export const applicationQuestionsRelations = relations(applicationQuestions, ({ one }) => ({
+  application: one(applications, {
+    fields: [applicationQuestions.applicationId],
+    references: [applications.id],
+  }),
 }));
 
 export const applicationDocumentsRelations = relations(applicationDocuments, ({ one }) => ({

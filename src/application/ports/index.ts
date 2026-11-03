@@ -1,5 +1,6 @@
 export * from "./analysis-repository-port";
 export * from "./application-repository-port";
+export * from "./application-question-repository-port";
 export * from "./candidate-profile-repository-port";
 export * from "./company-repository-port";
 export * from "./document-generator-port";

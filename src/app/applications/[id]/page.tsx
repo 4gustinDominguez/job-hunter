@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ApplicationQuestions } from "../../_components/application-questions";
 import { DocumentEditor } from "../../_components/document-editor";
 import { GenerateDocButtons } from "../../_components/generate-doc-buttons";
 import { StatusBadge } from "../../_components/badges";
 import {
+  applicationQuestionRepository,
   applicationRepository,
   candidateProfileRepository,
   documentRepository,
@@ -38,10 +40,13 @@ export default async function ApplicationDetailPage({
   if (!application) {
     notFound();
   }
-  const [job, documents, profile] = await Promise.all([
+  const [job, documents, profile, questions] = await Promise.all([
     getJob.run(application.jobId),
     documentRepository.listByApplication(application.id),
     candidateProfileRepository.findFirst(),
+    application.status === "INTERESTED"
+      ? applicationQuestionRepository.listByApplication(application.id)
+      : Promise.resolve([]),
   ]);
   if (!job) {
     notFound();
@@ -83,6 +88,10 @@ export default async function ApplicationDetailPage({
         coverLetterExists={byKind.has("COVER_LETTER")}
         tailoredCvExists={byKind.has("TAILORED_CV")}
       />
+
+      {application.status === "INTERESTED" ? (
+        <ApplicationQuestions applicationId={application.id} questions={questions} />
+      ) : null}
 
       <div className="flex flex-col gap-5">
         {presentKinds.map((kind) => {
