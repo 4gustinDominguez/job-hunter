@@ -46,7 +46,7 @@ import { HimalayasJobSource } from "@/infrastructure/job-sources/himalayas/himal
 import { RemotiveJobSource } from "@/infrastructure/job-sources/remotive/remotive-job-source";
 import { WwrJobSource } from "@/infrastructure/job-sources/wwr/wwr-job-source";
 import { cipherFromEnv } from "@/infrastructure/security/secret-cipher";
-import { envDefaultSettings } from "@/infrastructure/settings/env-defaults";
+import { envDefaultSettings, envEnabledSources } from "@/infrastructure/settings/env-defaults";
 
 // Re-exported for /api/health's deep DB probe — routes never import
 // infrastructure directly (hexagonal rule); the container is the only seam.
@@ -87,13 +87,16 @@ export const saveIntegrationSettings = new SaveIntegrationSettings(
 // Every managed source is constructed; each one consults its settings first
 // (disabled → no API call at all), so JOB_SOURCES only sets the initial state.
 function resolveJobSources(): JobSourcePort[] {
-  return [
-    new FixtureJobSource(integrationSettingsReader),
+  const sources: JobSourcePort[] = [
     new RemotiveJobSource(undefined, integrationSettingsReader),
     new ArbeitnowJobSource(undefined, integrationSettingsReader),
     new HimalayasJobSource(undefined, integrationSettingsReader),
     new WwrJobSource(undefined, integrationSettingsReader),
   ];
+  if (!process.env.VERCEL && envEnabledSources().has("FIXTURE")) {
+    sources.unshift(new FixtureJobSource(integrationSettingsReader));
+  }
+  return sources;
 }
 
 export const ingestJobs = new IngestJobs(resolveJobSources(), jobRepository, companyRepository);
