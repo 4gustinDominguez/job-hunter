@@ -4,6 +4,7 @@ import { FitBadge, FitStateBadge, RemoteBadge, SourceBadge } from "../_component
 import { dismissJobAction } from "../_lib/actions";
 import { analysisRepository, listJobs } from "../_lib/container";
 import { formatLocation, formatSalary } from "../_lib/format";
+import { jobHref, jobsListHref } from "./list-href";
 import { EMPLOYMENT_TYPES, REMOTE_TYPES } from "@/domain/job/enums";
 import { JOB_SOURCE_TYPES } from "@/domain/job/enums";
 import type { EmploymentType, JobSourceType, RemoteType } from "@/domain/job/enums";
@@ -108,30 +109,37 @@ export default async function JobsPage({
     showDismissed,
   );
 
-  // Rebuild the current query for pagination links (form submits reset to page 1).
-  const pageHref = (target: number): `/jobs?${string}` | "/jobs" => {
-    const params = new URLSearchParams();
-    if (q) params.set("q", q);
-    if (location) params.set("location", location);
-    if (remoteType) params.set("remote", remoteType);
-    if (employmentType) params.set("type", employmentType);
-    if (source) params.set("source", source);
-    if (fitValues.length > 0) params.set("fit", fitValues.join(","));
-    if (state) params.set("state", state);
-    if (sortByFit) params.set("sort", "fit");
-    if (showDismissed) params.set("dismissed", "1");
-    if (target > 1) params.set("page", String(target));
-    const queryString = params.toString();
-    return queryString === "" ? "/jobs" : `/jobs?${queryString}`;
+  // Normalized filter values, rebuilt for every link back to this list.
+  const filterParams = (): Record<string, string> => {
+    const params: Record<string, string> = {};
+    if (q) params.q = q;
+    if (location) params.location = location;
+    if (remoteType) params.remote = remoteType;
+    if (employmentType) params.type = employmentType;
+    if (source) params.source = source;
+    if (fitValues.length > 0) params.fit = fitValues.join(",");
+    if (state) params.state = state;
+    if (sortByFit) params.sort = "fit";
+    if (showDismissed) params.dismissed = "1";
+    return params;
   };
 
+  // Pagination links (form submits reset to page 1, so the target page is explicit).
+  const pageHref = (target: number) =>
+    jobsListHref(target > 1 ? { ...filterParams(), page: String(target) } : filterParams());
+
   // Toggle URL for the dismissed view (keeps every other filter).
-  const withDismissed = (show: boolean): `/jobs?${string}` | "/jobs" => {
-    const params = new URLSearchParams(pageHref(1).split("?")[1] ?? "");
-    if (show) params.set("dismissed", "1");
-    else params.delete("dismissed");
-    const queryString = params.toString();
-    return queryString === "" ? "/jobs" : `/jobs?${queryString}`;
+  const withDismissed = (show: boolean) => {
+    const params = filterParams();
+    if (show) params.dismissed = "1";
+    else delete params.dismissed;
+    return jobsListHref(params);
+  };
+
+  // Job links carry the filters + current page so the detail's breadcrumb can restore them.
+  const jobLinkParams = {
+    ...filterParams(),
+    ...(page > 1 ? { page: String(page) } : {}),
   };
 
   return (
@@ -323,7 +331,7 @@ export default async function JobsPage({
             return (
               <li key={job.id} className="flex items-stretch">
                 <Link
-                  href={`/jobs/${job.id}`}
+                  href={jobHref(job.id, jobLinkParams)}
                   className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-4 gap-y-2 px-4 py-3 hover:bg-paper"
                 >
                   <div className="min-w-0">

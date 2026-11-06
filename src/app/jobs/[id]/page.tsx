@@ -21,6 +21,7 @@ import {
   jobRepository,
 } from "../../_lib/container";
 import { formatDate, formatLocation, formatSalary } from "../../_lib/format";
+import { jobsListHref } from "../list-href";
 import { extractApplyUrl } from "@/domain/job/apply-url";
 import type { JobAnalysis } from "@/domain/matching/job-analysis";
 
@@ -131,12 +132,20 @@ function AnalysisBreakdown({ analysis }: { analysis: JobAnalysis }) {
   );
 }
 
-export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function JobDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const { id } = await params;
   const job = await getJob.run(id);
   if (!job) {
     notFound();
   }
+  // The list link carries its filters; the breadcrumb restores them.
+  const backHref = jobsListHref(await searchParams);
 
   const [listings, applications, record] = await Promise.all([
     jobRepository.listListings(job.id),
@@ -150,7 +159,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/jobs" className="text-sm text-muted hover:text-ink">
+      <Link href={backHref} className="text-sm text-muted hover:text-ink">
         ← All jobs
       </Link>
 
