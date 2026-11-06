@@ -21,6 +21,7 @@ import {
   jobRepository,
 } from "../../_lib/container";
 import { formatDate, formatLocation, formatSalary } from "../../_lib/format";
+import { extractApplyUrl } from "@/domain/job/apply-url";
 import type { JobAnalysis } from "@/domain/matching/job-analysis";
 
 export async function generateMetadata({
@@ -144,6 +145,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   ]);
   const existingApplication = applications.find((app) => app.jobId === job.id);
   const notes = job.notes ?? [];
+  // WWR links to itself; the description usually hides the real posting URL.
+  const applyUrl = extractApplyUrl(job.description);
 
   return (
     <div className="flex flex-col gap-6">
@@ -290,12 +293,12 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                   </div>
                   <div className="flex min-w-0 flex-col items-end">
                     <a
-                      href={listing.url}
+                      href={listing.source === "WWR" ? (applyUrl ?? listing.url) : listing.url}
                       target="_blank"
                       rel="noreferrer"
                       className="max-w-full truncate font-mono text-xs text-accent-strong hover:underline"
                     >
-                      {listing.url}
+                      {listing.source === "WWR" ? (applyUrl ?? listing.url) : listing.url}
                     </a>
                     <time
                       className="font-mono text-xs text-muted"
