@@ -18,6 +18,7 @@ export * from "./ingestion-runs";
 export * from "./integration-settings";
 export * from "./job-analyses";
 export * from "./jobs";
+export * from "./profile-suggestions";
 export * from "./question-similarities";
 export * from "./search-profiles";
 export * from "./uploaded-cvs";

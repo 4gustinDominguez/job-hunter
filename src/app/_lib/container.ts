@@ -13,6 +13,8 @@ import {
   ListJobs,
   LoadCvVersion,
   PrefilterJobs,
+  ResolveProfileSuggestion,
+  ReviewProfileTexts,
   SaveApplicationDocument,
   SaveApplicationQuestionAnswer,
   SaveCvLayout,
@@ -37,11 +39,13 @@ import { DrizzleDocumentRepository } from "@/infrastructure/db/drizzle-document-
 import { DrizzleIngestionRunRepository } from "@/infrastructure/db/drizzle-ingestion-run-repository";
 import { DrizzleIntegrationSettingsRepository } from "@/infrastructure/db/drizzle-integration-settings-repository";
 import { DrizzleJobRepository } from "@/infrastructure/db/drizzle-job-repository";
+import { DrizzleProfileSuggestionRepository } from "@/infrastructure/db/drizzle-profile-suggestion-repository";
 import { DrizzleSearchProfileRepository } from "@/infrastructure/db/drizzle-search-profile-repository";
 import { DrizzleUploadedCvRepository } from "@/infrastructure/db/drizzle-uploaded-cv-repository";
 import { createCvExtractor } from "@/infrastructure/ai/create-cv-extractor";
 import { createDocumentGenerator } from "@/infrastructure/ai/create-document-generator";
 import { createJobMatcher } from "@/infrastructure/ai/create-job-matcher";
+import { createProfileReviewAnalyzer } from "@/infrastructure/ai/create-profile-review";
 import { createQuestionSimilarityAnalyzer } from "@/infrastructure/ai/create-question-similarity";
 import { SentryLogger } from "@/infrastructure/logging/sentry-logger";
 import { ArbeitnowJobSource } from "@/infrastructure/job-sources/arbeitnow/arbeitnow-job-source";
@@ -61,6 +65,7 @@ export const companyRepository = new DrizzleCompanyRepository(db);
 export const applicationRepository = new DrizzleApplicationRepository(db);
 export const applicationQuestionRepository = new DrizzleApplicationQuestionRepository(db);
 export const questionSimilarityRepository = new DrizzleQuestionSimilarityRepository(db);
+export const profileSuggestionRepository = new DrizzleProfileSuggestionRepository(db);
 export const candidateProfileRepository = new DrizzleCandidateProfileRepository(db);
 export const cvVersionRepository = new DrizzleCvVersionRepository(db);
 export const searchProfileRepository = new DrizzleSearchProfileRepository(db);
@@ -74,6 +79,7 @@ export const logger: LoggerPort = new SentryLogger();
 export const cvExtractor = createCvExtractor(logger);
 export const jobMatcher = createJobMatcher(logger);
 export const documentGenerator = createDocumentGenerator(logger);
+export const profileReviewAnalyzer = createProfileReviewAnalyzer(logger);
 export const questionSimilarityAnalyzer = createQuestionSimilarityAnalyzer(logger);
 
 // Settings read at request time: rows from /integrations win, env is the
@@ -153,6 +159,16 @@ export const saveCvVersion = new SaveCvVersion(candidateProfileRepository, cvVer
 export const loadCvVersion = new LoadCvVersion(
   candidateProfileRepository,
   cvVersionRepository,
+  saveProfile,
+);
+export const reviewProfileTexts = new ReviewProfileTexts(
+  candidateProfileRepository,
+  profileSuggestionRepository,
+  profileReviewAnalyzer,
+);
+export const resolveProfileSuggestion = new ResolveProfileSuggestion(
+  candidateProfileRepository,
+  profileSuggestionRepository,
   saveProfile,
 );
 export const saveSearchProfile = new SaveSearchProfile(searchProfileRepository);

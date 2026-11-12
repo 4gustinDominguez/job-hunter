@@ -99,6 +99,11 @@ export interface CvVersionsState {
   message: string;
 }
 
+export interface SuggestionsState {
+  message: string;
+  error?: boolean;
+}
+
 export interface SearchProfileFormState {
   errors: Record<string, string[] | undefined>;
   message: string;

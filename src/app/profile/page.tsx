@@ -2,15 +2,19 @@ import type { Metadata } from "next";
 import {
   candidateProfileRepository,
   cvVersionRepository,
+  profileSuggestionRepository,
   uploadedCvRepository,
 } from "../_lib/container";
 import { formatDate } from "../_lib/format";
 import { normalizeCvLayout } from "@/domain/candidate/cv-layout";
+import type { ProfileSuggestion } from "@/domain/candidate/profile-suggestion";
 import { CvLayoutEditor } from "./cv-layout-editor";
 import { CvVersionsPanel, type CvVersionRow } from "./cv-versions-panel";
 import { ProfileWorkspace } from "./profile-workspace";
+import { SuggestionsPanel } from "./suggestions-panel";
 
 const NO_VERSIONS: CvVersionRow[] = [];
+const NO_SUGGESTIONS: ProfileSuggestion[] = [];
 
 export const metadata: Metadata = { title: "Profile" };
 
@@ -25,6 +29,9 @@ export default async function ProfilePage() {
     uploadedCvRepository.get(),
   ]);
   const versions = profile ? await cvVersionRepository.listByProfile(profile.id) : NO_VERSIONS;
+  const suggestions = profile
+    ? await profileSuggestionRepository.listPending(profile.id)
+    : NO_SUGGESTIONS;
 
   return (
     <div className="flex flex-col gap-6">
@@ -121,6 +128,20 @@ export default async function ProfilePage() {
             Loading one restores its texts, skills and layout; job preferences are never touched.
           </p>
           <CvVersionsPanel versions={versions} />
+        </section>
+      ) : null}
+
+      {profile ? (
+        <section
+          aria-label="Suggestions"
+          className="rounded-lg border border-line bg-surface p-4 print:hidden"
+        >
+          <h2 className="text-sm font-medium">CV suggestions</h2>
+          <p className="mt-1 text-xs text-muted">
+            &quot;Review my CV&quot; has the LLM read your saved texts for grammar, style, clarity
+            and impact — never inventing facts. Apply writes the chosen text into your profile.
+          </p>
+          <SuggestionsPanel profile={profile} suggestions={suggestions} />
         </section>
       ) : null}
     </div>

@@ -3,7 +3,7 @@
 import { after } from "next/server";
 import { revalidatePath, refresh } from "next/cache";
 import { redirect } from "next/navigation";
-import type { SaveProfileInput } from "@/application";
+import type { SaveProfileInput, SuggestionDecision } from "@/application";
 import {
   AnalysisError,
   CvExtractionError,
@@ -34,6 +34,8 @@ import {
   jobRepository,
   loadCvVersion,
   prefilterJobs,
+  resolveProfileSuggestion,
+  reviewProfileTexts,
   saveApplicationDocument,
   saveApplicationQuestionAnswer,
   saveCvLayout,
@@ -57,6 +59,7 @@ import type {
   ProfileFormValues,
   SearchProfileFormState,
   SearchProfileFormValues,
+  SuggestionsState,
 } from "./schemas";
 import {
   integrationSettingsFormSchema,
@@ -515,6 +518,65 @@ export async function loadCvVersionAction(
   revalidatePath("/profile");
   revalidatePath("/cv");
   return { message: "Version loaded." };
+}
+
+export async function reviewProfileTextsAction(
+  _prevState: SuggestionsState,
+  _formData: FormData,
+): Promise<SuggestionsState> {
+  await requireSession();
+  try {
+    const result = await reviewProfileTexts.run();
+    revalidatePath("/profile");
+    return {
+      message:
+        result.created > 0
+          ? `Found ${result.created} improvement${result.created === 1 ? "" : "s"} in ${result.reviewed} texts.`
+          : `Reviewed ${result.reviewed} texts — nothing worth changing.`,
+      error: false,
+    };
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof AnalysisError) {
+      return { message: error.message, error: true };
+    }
+    console.warn("[profile-review] review failed:", error);
+    return { message: "The review failed unexpectedly. Try again.", error: true };
+  }
+}
+
+export async function resolveProfileSuggestionAction(
+  _prevState: SuggestionsState,
+  formData: FormData,
+): Promise<SuggestionsState> {
+  await requireSession();
+  // The decision lives in the button name — if neither arrives, we do nothing.
+  const acceptId = String(formData.get("acceptId") ?? "");
+  const dismissId = String(formData.get("dismissId") ?? "");
+  if (acceptId === "" && dismissId === "") {
+    return { message: "The request was incomplete — try again.", error: true };
+  }
+  const decision: SuggestionDecision = acceptId !== "" ? "accept" : "dismiss";
+  const suggestionId = acceptId !== "" ? acceptId : dismissId;
+  try {
+    await resolveProfileSuggestion.run(
+      suggestionId,
+      decision,
+      decision === "accept" ? String(formData.get("text") ?? "") : undefined,
+    );
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof NotFoundError) {
+      return { message: error.message, error: true };
+    }
+    console.warn("[profile-review] resolve failed:", error);
+    return { message: "Handling the suggestion failed unexpectedly. Try again.", error: true };
+  }
+  revalidatePath("/profile");
+  revalidatePath("/cv");
+  return {
+    message:
+      decision === "dismiss" ? "Suggestion dismissed." : "Suggestion applied to your profile.",
+    error: false,
+  };
 }
 
 export async function saveSearchProfileAction(
