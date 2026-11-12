@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { candidateProfileRepository, uploadedCvRepository } from "../_lib/container";
 import { formatDate } from "../_lib/format";
+import { normalizeCvLayout } from "@/domain/candidate/cv-layout";
+import { CvLayoutEditor } from "./cv-layout-editor";
 import { ProfileWorkspace } from "./profile-workspace";
 
 export const metadata: Metadata = { title: "Profile" };
@@ -77,6 +79,28 @@ export default async function ProfilePage() {
       </section>
 
       <ProfileWorkspace profile={profile ?? undefined} />
+
+      {profile ? (
+        <section
+          aria-label="CV layout"
+          className="rounded-lg border border-line bg-surface p-4 print:hidden"
+        >
+          <h2 className="text-sm font-medium">CV layout</h2>
+          <p className="mt-1 text-xs text-muted">
+            Section order of the public{" "}
+            <a
+              href="/cv"
+              target="_blank"
+              rel="noreferrer"
+              className="text-accent-strong hover:underline"
+            >
+              /cv
+            </a>{" "}
+            page and of the PDF it prints. Hidden sections are left out of both.
+          </p>
+          <CvLayoutEditor layout={normalizeCvLayout(profile.cvLayout)} />
+        </section>
+      ) : null}
     </div>
   );
 }

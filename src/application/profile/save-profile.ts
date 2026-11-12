@@ -16,12 +16,16 @@ export class SaveProfile {
     if (!email) {
       throw new ValidationError("email", "Email is required");
     }
-    const existing = input.id ? undefined : await this.profiles.findFirst();
+    const existing = input.id
+      ? await this.profiles.getById(input.id)
+      : await this.profiles.findFirst();
     const profile: CandidateProfile = {
       ...input,
       id: input.id || existing?.id || crypto.randomUUID(),
       name,
       email,
+      // The layout is edited on its own — saves that don't mention it keep it.
+      cvLayout: input.cvLayout ?? existing?.cvLayout ?? undefined,
     };
     return this.profiles.save(profile);
   }

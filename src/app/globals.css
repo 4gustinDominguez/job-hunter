@@ -34,3 +34,15 @@ body {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
+
+/* Print → the CV template becomes the PDF ("Print / Save as PDF" on /cv). */
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  html,
+  body {
+    background: #fff;
+  }
+}

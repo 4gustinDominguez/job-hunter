@@ -14,6 +14,7 @@ import {
   PrefilterJobs,
   SaveApplicationDocument,
   SaveApplicationQuestionAnswer,
+  SaveCvLayout,
   SaveIntegrationSettings,
   SaveProfile,
   SaveSearchProfile,
@@ -143,5 +144,6 @@ export const findQuestionSimilarities = new FindQuestionSimilarities(
   questionSimilarityAnalyzer,
 );
 export const saveProfile = new SaveProfile(candidateProfileRepository);
+export const saveCvLayout = new SaveCvLayout(candidateProfileRepository, saveProfile);
 export const saveSearchProfile = new SaveSearchProfile(searchProfileRepository);
 export const deleteSearchProfile = new DeleteSearchProfile(searchProfileRepository);

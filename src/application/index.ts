@@ -23,6 +23,7 @@ export * from "./matching/prefilter";
 export * from "./matching/prefilter-jobs";
 export * from "./ports";
 export * from "./profile/profile-schemas";
+export * from "./profile/save-cv-layout";
 export * from "./profile/save-profile";
 export * from "./search-profiles/delete-search-profile";
 export * from "./search-profiles/save-search-profile";

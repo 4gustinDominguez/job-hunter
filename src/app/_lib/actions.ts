@@ -10,6 +10,7 @@ import {
   DocumentGenerationError,
   NotFoundError,
   ValidationError,
+  cvLayoutSchema,
   recordIngestionRun,
 } from "@/application";
 import { requireSession } from "./auth";
@@ -34,6 +35,7 @@ import {
   prefilterJobs,
   saveApplicationDocument,
   saveApplicationQuestionAnswer,
+  saveCvLayout,
   saveIntegrationSettings,
   saveProfile,
   saveSearchProfile,
@@ -43,6 +45,7 @@ import {
 } from "./container";
 import type {
   ApplicationQuestionsState,
+  CvLayoutState,
   DocumentActionState,
   FetchJobsState,
   ImportCvState,
@@ -445,6 +448,35 @@ export async function saveProfileAction(
     }
     throw error;
   }
+}
+
+export async function saveCvLayoutAction(
+  _prevState: CvLayoutState,
+  formData: FormData,
+): Promise<CvLayoutState> {
+  await requireSession();
+  const raw = String(formData.get("layout") ?? "[]");
+  let payload: unknown;
+  try {
+    payload = JSON.parse(raw);
+  } catch {
+    return { message: "Layout could not be read." };
+  }
+  const parsed = cvLayoutSchema.safeParse(payload);
+  if (!parsed.success) {
+    return { message: "Layout is invalid." };
+  }
+  try {
+    await saveCvLayout.run(parsed.data);
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return { message: error.message };
+    }
+    throw error;
+  }
+  revalidatePath("/profile");
+  revalidatePath("/cv");
+  return { message: "Layout saved." };
 }
 
 export async function saveSearchProfileAction(

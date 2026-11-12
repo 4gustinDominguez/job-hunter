@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SKILL_CATEGORIES, SKILL_LEVELS } from "@/domain/candidate/skill";
+import { CV_SECTIONS } from "@/domain/candidate/cv-layout";
 
 export const isoDateString = z
   .string()
@@ -43,3 +44,12 @@ export const educationItemSchema = z.object({
   endDate: isoDateString.optional(),
   achievements: z.array(z.string()).default([]),
 });
+
+/** Raw payload from the layout editor (one hidden JSON input). */
+export const cvLayoutEntrySchema = z.object({
+  section: z.enum(CV_SECTIONS),
+  visible: z.boolean(),
+  title: z.string().trim().max(60).optional(),
+});
+
+export const cvLayoutSchema = z.array(cvLayoutEntrySchema);

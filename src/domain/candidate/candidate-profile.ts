@@ -2,6 +2,7 @@ import type { Education } from "@/domain/candidate/education";
 import type { Experience } from "@/domain/candidate/experience";
 import type { Project } from "@/domain/candidate/project";
 import type { Skill } from "@/domain/candidate/skill";
+import type { CvLayout } from "@/domain/candidate/cv-layout";
 import type { EmploymentType } from "@/domain/job/enums";
 import type { Location } from "@/domain/shared/location";
 import type { RemotePreference } from "@/domain/shared/remote-preference";
@@ -29,5 +30,7 @@ export interface CandidateProfile {
   skills: Skill[];
   projects: Project[];
   education: Education[];
+  /** Section order/visibility of the public CV; absent = the default order. */
+  cvLayout?: CvLayout;
   preferences: JobPreferences;
 }

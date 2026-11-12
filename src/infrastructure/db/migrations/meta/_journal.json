@@ -64,6 +64,13 @@
       "when": 1793734446616,
       "tag": "0008_striped_ultimo",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794470000527,
+      "tag": "0009_tough_micromacro",
+      "breakpoints": true
     }
   ]
 }

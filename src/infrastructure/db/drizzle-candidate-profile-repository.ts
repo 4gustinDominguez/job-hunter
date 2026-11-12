@@ -39,6 +39,7 @@ function toDomainProfile(row: ProfileRow, skills: Skill[]): CandidateProfile {
     skills,
     projects: row.projects,
     education: reviveEducation(row.education),
+    cvLayout: row.cvLayout ?? undefined,
     preferences: row.preferences,
   };
 }
@@ -97,6 +98,7 @@ export class DrizzleCandidateProfileRepository implements CandidateProfileReposi
       experience: profile.experience,
       projects: profile.projects,
       education: profile.education,
+      cvLayout: profile.cvLayout ?? null,
       preferences: profile.preferences,
     };
     const [row] = await this.database

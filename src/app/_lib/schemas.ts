@@ -91,6 +91,10 @@ export interface ProfileFormState {
   message: string;
 }
 
+export interface CvLayoutState {
+  message: string;
+}
+
 export interface SearchProfileFormState {
   errors: Record<string, string[] | undefined>;
   message: string;

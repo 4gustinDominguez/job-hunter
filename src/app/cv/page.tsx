@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PrintButton } from "../_components/print-button";
 import { candidateProfileRepository } from "../_lib/container";
 import { formatDateRange, formatLocation } from "../_lib/format";
 import type { CandidateProfile } from "@/domain/candidate/candidate-profile";
 import type { SkillCategory } from "@/domain/candidate/skill";
+import { CV_SECTION_LABELS, normalizeCvLayout, type CvSection } from "@/domain/candidate/cv-layout";
 
 const SKILL_CATEGORY_LABELS: Record<SkillCategory, string> = {
   PROGRAMMING: "Programming",
@@ -27,9 +29,17 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: name ? `${name} — CV` : "CV" };
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  className,
+  children,
+}: {
+  title: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section aria-label={title} className="flex flex-col gap-3">
+    <section aria-label={title} className={`flex flex-col gap-3 ${className ?? ""}`}>
       <h2 className="border-b border-line pb-2 text-sm font-semibold uppercase tracking-wide text-muted">
         {title}
       </h2>
@@ -55,7 +65,7 @@ function SkillChips({ skills }: { skills: { id: string; name: string }[] }) {
 
 function ExperienceItem({ item }: { item: CandidateProfile["experience"][number] }) {
   return (
-    <article className="flex flex-col gap-1.5">
+    <article className="flex flex-col gap-1.5 print:break-inside-avoid">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3">
         <h3 className="font-medium">{item.position}</h3>
         <time className="font-mono text-xs text-muted whitespace-nowrap">
@@ -118,6 +128,120 @@ export default async function PublicCvPage() {
     profile.projects.length > 0 ||
     profile.education.length > 0;
 
+  // Content per section — the layout below decides order and visibility, and
+  // sections without content stay out of the page entirely.
+  const sectionNodes: Partial<Record<CvSection, React.ReactNode>> = {
+    summary: profile.summary ? (
+      <p className="max-w-[72ch] text-sm leading-relaxed whitespace-pre-line text-ink/90">
+        {profile.summary}
+      </p>
+    ) : undefined,
+    skills:
+      skillsByCategory.length > 0 ? (
+        <div className="flex flex-col gap-4">
+          {skillsByCategory.map((group) => (
+            <div key={group.category} className="flex flex-col gap-2">
+              <h3 className="text-xs font-medium text-muted">{group.label}</h3>
+              <SkillChips skills={group.items} />
+            </div>
+          ))}
+        </div>
+      ) : undefined,
+    experience:
+      profile.experience.length > 0 ? (
+        <div className="flex flex-col gap-6">
+          {[...profile.experience]
+            .toSorted((a, b) => b.startDate.getTime() - a.startDate.getTime())
+            .map((item) => (
+              <ExperienceItem key={item.id} item={item} />
+            ))}
+        </div>
+      ) : undefined,
+    projects:
+      profile.projects.length > 0 ? (
+        <div className="flex flex-col gap-5">
+          {profile.projects.map((project) => (
+            <article key={project.id} className="flex flex-col gap-1.5 print:break-inside-avoid">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                <h3 className="font-medium">{project.name}</h3>
+                {project.url ? (
+                  <a
+                    href={project.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-mono text-xs text-accent-strong hover:underline"
+                  >
+                    {project.url}
+                  </a>
+                ) : null}
+              </div>
+              <p className="max-w-[72ch] text-sm leading-relaxed text-ink/90">
+                {project.description}
+              </p>
+              {project.technologies.length > 0 ? (
+                <p className="text-xs text-muted">Built with: {project.technologies.join(" · ")}</p>
+              ) : null}
+              {project.highlights.length > 0 ? (
+                <ul className="flex max-w-[72ch] flex-col gap-1 text-sm text-ink/90">
+                  {project.highlights.map((highlight) => (
+                    <li key={highlight} className="flex gap-2">
+                      <span aria-hidden="true" className="text-accent">
+                        ✓
+                      </span>
+                      <span>{highlight}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </article>
+          ))}
+        </div>
+      ) : undefined,
+    education:
+      profile.education.length > 0 ? (
+        <div className="flex flex-col gap-4">
+          {[...profile.education]
+            .toSorted((a, b) => b.startDate.getTime() - a.startDate.getTime())
+            .map((item) => (
+              <article key={item.id} className="flex flex-col gap-1 print:break-inside-avoid">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                  <h3 className="font-medium">{item.degree}</h3>
+                  <time className="font-mono text-xs text-muted whitespace-nowrap">
+                    {formatDateRange(item.startDate, item.endDate)}
+                  </time>
+                </div>
+                <p className="text-sm text-accent-strong">{item.institution}</p>
+                <p className="text-sm text-muted">{item.field}</p>
+                {item.achievements && item.achievements.length > 0 ? (
+                  <p className="text-xs text-muted">{item.achievements.join(" · ")}</p>
+                ) : null}
+              </article>
+            ))}
+        </div>
+      ) : undefined,
+    // Original PDF — embedded last so the structured CV stays front-and-centre.
+    "original-pdf": (
+      <div className="flex flex-col gap-2">
+        <object
+          data="/cv/pdf"
+          type="application/pdf"
+          aria-label="Original CV (PDF)"
+          className="h-[80vh] w-full rounded-lg border border-line"
+        >
+          <p className="p-4 text-sm text-muted">
+            Your browser can&apos;t display the PDF inline.{" "}
+            <a href="/cv/pdf" className="text-accent-strong hover:underline">
+              Open it in a new tab
+            </a>
+            .
+          </p>
+        </object>
+      </div>
+    ),
+  };
+
+  const layout = normalizeCvLayout(profile.cvLayout);
+
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-12 px-4 py-10 md:px-6 print:px-0 print:py-0">
       {/* Header */}
@@ -137,7 +261,7 @@ export default async function PublicCvPage() {
             </a>
           ) : null}
         </div>
-        <div className="flex gap-2 pt-1">
+        <div className="flex flex-wrap gap-2 pt-1 print:hidden">
           <a
             href="/cv/pdf"
             target="_blank"
@@ -152,6 +276,7 @@ export default async function PublicCvPage() {
           >
             Download PDF
           </a>
+          <PrintButton />
         </div>
       </header>
 
@@ -161,126 +286,17 @@ export default async function PublicCvPage() {
         </p>
       ) : null}
 
-      {profile.summary ? (
-        <Section title="Summary">
-          <p className="max-w-[72ch] text-sm leading-relaxed whitespace-pre-line text-ink/90">
-            {profile.summary}
-          </p>
-        </Section>
-      ) : null}
-
-      {skillsByCategory.length > 0 ? (
-        <Section title="Skills">
-          <div className="flex flex-col gap-4">
-            {skillsByCategory.map((group) => (
-              <div key={group.category} className="flex flex-col gap-2">
-                <h3 className="text-xs font-medium text-muted">{group.label}</h3>
-                <SkillChips skills={group.items} />
-              </div>
-            ))}
-          </div>
-        </Section>
-      ) : null}
-
-      {profile.experience.length > 0 ? (
-        <Section title="Experience">
-          <div className="flex flex-col gap-6">
-            {[...profile.experience]
-              .toSorted((a, b) => b.startDate.getTime() - a.startDate.getTime())
-              .map((item) => (
-                <ExperienceItem key={item.id} item={item} />
-              ))}
-          </div>
-        </Section>
-      ) : null}
-
-      {profile.projects.length > 0 ? (
-        <Section title="Projects">
-          <div className="flex flex-col gap-5">
-            {profile.projects.map((project) => (
-              <article key={project.id} className="flex flex-col gap-1.5">
-                <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                  <h3 className="font-medium">{project.name}</h3>
-                  {project.url ? (
-                    <a
-                      href={project.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-mono text-xs text-accent-strong hover:underline"
-                    >
-                      {project.url}
-                    </a>
-                  ) : null}
-                </div>
-                <p className="max-w-[72ch] text-sm leading-relaxed text-ink/90">
-                  {project.description}
-                </p>
-                {project.technologies.length > 0 ? (
-                  <p className="text-xs text-muted">
-                    Built with: {project.technologies.join(" · ")}
-                  </p>
-                ) : null}
-                {project.highlights.length > 0 ? (
-                  <ul className="flex max-w-[72ch] flex-col gap-1 text-sm text-ink/90">
-                    {project.highlights.map((highlight) => (
-                      <li key={highlight} className="flex gap-2">
-                        <span aria-hidden="true" className="text-accent">
-                          ✓
-                        </span>
-                        <span>{highlight}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </article>
-            ))}
-          </div>
-        </Section>
-      ) : null}
-
-      {profile.education.length > 0 ? (
-        <Section title="Education">
-          <div className="flex flex-col gap-4">
-            {[...profile.education]
-              .toSorted((a, b) => b.startDate.getTime() - a.startDate.getTime())
-              .map((item) => (
-                <article key={item.id} className="flex flex-col gap-1">
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                    <h3 className="font-medium">{item.degree}</h3>
-                    <time className="font-mono text-xs text-muted whitespace-nowrap">
-                      {formatDateRange(item.startDate, item.endDate)}
-                    </time>
-                  </div>
-                  <p className="text-sm text-accent-strong">{item.institution}</p>
-                  <p className="text-sm text-muted">{item.field}</p>
-                  {item.achievements && item.achievements.length > 0 ? (
-                    <p className="text-xs text-muted">{item.achievements.join(" · ")}</p>
-                  ) : null}
-                </article>
-              ))}
-          </div>
-        </Section>
-      ) : null}
-
-      {/* Original PDF — embedded last so the structured CV stays front-and-centre. */}
-      <Section title="Original PDF">
-        <div className="flex flex-col gap-2">
-          <object
-            data="/cv/pdf"
-            type="application/pdf"
-            aria-label="Original CV (PDF)"
-            className="h-[80vh] w-full rounded-lg border border-line"
+      {layout
+        .filter((entry) => entry.visible && sectionNodes[entry.section])
+        .map((entry) => (
+          <Section
+            key={entry.section}
+            title={entry.title ?? CV_SECTION_LABELS[entry.section]}
+            className={entry.section === "original-pdf" ? "print:hidden" : undefined}
           >
-            <p className="p-4 text-sm text-muted">
-              Your browser can&apos;t display the PDF inline.{" "}
-              <a href="/cv/pdf" className="text-accent-strong hover:underline">
-                Open it in a new tab
-              </a>
-              .
-            </p>
-          </object>
-        </div>
-      </Section>
+            {sectionNodes[entry.section]}
+          </Section>
+        ))}
     </div>
   );
 }
