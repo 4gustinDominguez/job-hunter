@@ -53,3 +53,68 @@ export const cvLayoutEntrySchema = z.object({
 });
 
 export const cvLayoutSchema = z.array(cvLayoutEntrySchema);
+
+/**
+ * A stored CV version (see CvSnapshot). Dates come back from jsonb as strings —
+ * z.coerce.date() revives them, and defaults keep partial snapshots loadable.
+ */
+const snapshotDate = z.coerce.date();
+
+export const cvSnapshotSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().min(1),
+  phone: z.string().optional(),
+  location: z
+    .object({
+      city: z.string().optional(),
+      region: z.string().optional(),
+      country: z.string().optional(),
+      isRemote: z.boolean().default(false),
+    })
+    .optional(),
+  summary: z.string().optional(),
+  skills: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      category: z.enum(SKILL_CATEGORIES),
+      level: z.enum(SKILL_LEVELS),
+      yearsOfExperience: z.number().optional(),
+      lastUsed: snapshotDate.optional(),
+    }),
+  ),
+  experience: z.array(
+    z.object({
+      id: z.string(),
+      company: z.string(),
+      position: z.string(),
+      startDate: snapshotDate,
+      endDate: snapshotDate.optional(),
+      description: z.string().default(""),
+      achievements: z.array(z.string()).default([]),
+      skills: z.array(z.string()).default([]),
+    }),
+  ),
+  projects: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      description: z.string().default(""),
+      url: z.string().optional(),
+      technologies: z.array(z.string()).default([]),
+      highlights: z.array(z.string()).default([]),
+    }),
+  ),
+  education: z.array(
+    z.object({
+      id: z.string(),
+      institution: z.string(),
+      degree: z.string(),
+      field: z.string(),
+      startDate: snapshotDate,
+      endDate: snapshotDate.optional(),
+      achievements: z.array(z.string()).default([]),
+    }),
+  ),
+  cvLayout: cvLayoutSchema.optional(),
+});

@@ -11,10 +11,12 @@ import {
   GetJob,
   IngestJobs,
   ListJobs,
+  LoadCvVersion,
   PrefilterJobs,
   SaveApplicationDocument,
   SaveApplicationQuestionAnswer,
   SaveCvLayout,
+  SaveCvVersion,
   SaveIntegrationSettings,
   SaveProfile,
   SaveSearchProfile,
@@ -29,6 +31,7 @@ import { DrizzleApplicationQuestionRepository } from "@/infrastructure/db/drizzl
 import { DrizzleApplicationRepository } from "@/infrastructure/db/drizzle-application-repository";
 import { DrizzleQuestionSimilarityRepository } from "@/infrastructure/db/drizzle-question-similarity-repository";
 import { DrizzleCandidateProfileRepository } from "@/infrastructure/db/drizzle-candidate-profile-repository";
+import { DrizzleCvVersionRepository } from "@/infrastructure/db/drizzle-cv-version-repository";
 import { DrizzleCompanyRepository } from "@/infrastructure/db/drizzle-company-repository";
 import { DrizzleDocumentRepository } from "@/infrastructure/db/drizzle-document-repository";
 import { DrizzleIngestionRunRepository } from "@/infrastructure/db/drizzle-ingestion-run-repository";
@@ -59,6 +62,7 @@ export const applicationRepository = new DrizzleApplicationRepository(db);
 export const applicationQuestionRepository = new DrizzleApplicationQuestionRepository(db);
 export const questionSimilarityRepository = new DrizzleQuestionSimilarityRepository(db);
 export const candidateProfileRepository = new DrizzleCandidateProfileRepository(db);
+export const cvVersionRepository = new DrizzleCvVersionRepository(db);
 export const searchProfileRepository = new DrizzleSearchProfileRepository(db);
 export const analysisRepository = new DrizzleAnalysisRepository(db);
 export const documentRepository = new DrizzleDocumentRepository(db);
@@ -145,5 +149,11 @@ export const findQuestionSimilarities = new FindQuestionSimilarities(
 );
 export const saveProfile = new SaveProfile(candidateProfileRepository);
 export const saveCvLayout = new SaveCvLayout(candidateProfileRepository, saveProfile);
+export const saveCvVersion = new SaveCvVersion(candidateProfileRepository, cvVersionRepository);
+export const loadCvVersion = new LoadCvVersion(
+  candidateProfileRepository,
+  cvVersionRepository,
+  saveProfile,
+);
 export const saveSearchProfile = new SaveSearchProfile(searchProfileRepository);
 export const deleteSearchProfile = new DeleteSearchProfile(searchProfileRepository);

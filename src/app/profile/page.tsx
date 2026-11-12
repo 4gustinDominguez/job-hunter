@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
-import { candidateProfileRepository, uploadedCvRepository } from "../_lib/container";
+import {
+  candidateProfileRepository,
+  cvVersionRepository,
+  uploadedCvRepository,
+} from "../_lib/container";
 import { formatDate } from "../_lib/format";
 import { normalizeCvLayout } from "@/domain/candidate/cv-layout";
 import { CvLayoutEditor } from "./cv-layout-editor";
+import { CvVersionsPanel, type CvVersionRow } from "./cv-versions-panel";
 import { ProfileWorkspace } from "./profile-workspace";
+
+const NO_VERSIONS: CvVersionRow[] = [];
 
 export const metadata: Metadata = { title: "Profile" };
 
@@ -17,6 +24,7 @@ export default async function ProfilePage() {
     candidateProfileRepository.findFirst(),
     uploadedCvRepository.get(),
   ]);
+  const versions = profile ? await cvVersionRepository.listByProfile(profile.id) : NO_VERSIONS;
 
   return (
     <div className="flex flex-col gap-6">
@@ -99,6 +107,20 @@ export default async function ProfilePage() {
             page and of the PDF it prints. Hidden sections are left out of both.
           </p>
           <CvLayoutEditor layout={normalizeCvLayout(profile.cvLayout)} />
+        </section>
+      ) : null}
+
+      {profile ? (
+        <section
+          aria-label="CV versions"
+          className="rounded-lg border border-line bg-surface p-4 print:hidden"
+        >
+          <h2 className="text-sm font-medium">CV versions</h2>
+          <p className="mt-1 text-xs text-muted">
+            Snapshots of the <strong>saved</strong> CV — save the form first if you just edited it.
+            Loading one restores its texts, skills and layout; job preferences are never touched.
+          </p>
+          <CvVersionsPanel versions={versions} />
         </section>
       ) : null}
     </div>

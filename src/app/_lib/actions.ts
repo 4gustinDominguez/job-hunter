@@ -32,10 +32,12 @@ import {
   ingestJobs,
   ingestionRunRepository,
   jobRepository,
+  loadCvVersion,
   prefilterJobs,
   saveApplicationDocument,
   saveApplicationQuestionAnswer,
   saveCvLayout,
+  saveCvVersion,
   saveIntegrationSettings,
   saveProfile,
   saveSearchProfile,
@@ -46,6 +48,7 @@ import {
 import type {
   ApplicationQuestionsState,
   CvLayoutState,
+  CvVersionsState,
   DocumentActionState,
   FetchJobsState,
   ImportCvState,
@@ -477,6 +480,41 @@ export async function saveCvLayoutAction(
   revalidatePath("/profile");
   revalidatePath("/cv");
   return { message: "Layout saved." };
+}
+
+export async function saveCvVersionAction(
+  _prevState: CvVersionsState,
+  formData: FormData,
+): Promise<CvVersionsState> {
+  await requireSession();
+  try {
+    const version = await saveCvVersion.run(String(formData.get("label") ?? ""));
+    revalidatePath("/profile");
+    return { message: `Saved "${version.label}".` };
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return { message: error.message };
+    }
+    throw error;
+  }
+}
+
+export async function loadCvVersionAction(
+  _prevState: CvVersionsState,
+  formData: FormData,
+): Promise<CvVersionsState> {
+  await requireSession();
+  try {
+    await loadCvVersion.run(String(formData.get("versionId") ?? ""));
+  } catch (error) {
+    if (error instanceof NotFoundError || error instanceof ValidationError) {
+      return { message: error.message };
+    }
+    throw error;
+  }
+  revalidatePath("/profile");
+  revalidatePath("/cv");
+  return { message: "Version loaded." };
 }
 
 export async function saveSearchProfileAction(

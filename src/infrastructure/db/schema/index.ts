@@ -13,6 +13,7 @@ export * from "./application-questions";
 export * from "./applications";
 export * from "./candidate";
 export * from "./companies";
+export * from "./cv-versions";
 export * from "./ingestion-runs";
 export * from "./integration-settings";
 export * from "./job-analyses";
