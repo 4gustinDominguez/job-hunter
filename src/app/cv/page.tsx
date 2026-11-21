@@ -4,24 +4,8 @@ import { PrintButton } from "../_components/print-button";
 import { candidateProfileRepository } from "../_lib/container";
 import { formatDateRange, formatLocation } from "../_lib/format";
 import type { CandidateProfile } from "@/domain/candidate/candidate-profile";
-import type { SkillCategory } from "@/domain/candidate/skill";
+import { SKILL_CATEGORY_LABELS, SKILL_CATEGORY_ORDER } from "@/domain/candidate/skill";
 import { CV_SECTION_LABELS, normalizeCvLayout, type CvSection } from "@/domain/candidate/cv-layout";
-
-const SKILL_CATEGORY_LABELS: Record<SkillCategory, string> = {
-  PROGRAMMING: "Programming",
-  FRAMEWORK: "Frameworks",
-  TOOL: "Tools",
-  SOFT_SKILL: "Soft skills",
-  LANGUAGE: "Languages",
-};
-
-const SKILL_CATEGORY_ORDER: SkillCategory[] = [
-  "PROGRAMMING",
-  "FRAMEWORK",
-  "TOOL",
-  "SOFT_SKILL",
-  "LANGUAGE",
-];
 
 export async function generateMetadata(): Promise<Metadata> {
   const profile = await candidateProfileRepository.findFirst();
@@ -50,7 +34,7 @@ function Section({
 
 function SkillChips({ skills }: { skills: { id: string; name: string }[] }) {
   return (
-    <ul className="flex flex-wrap gap-1.5">
+    <ul className="cv-skills flex flex-wrap gap-1.5">
       {skills.map((skill) => (
         <li
           key={skill.id}
@@ -243,10 +227,10 @@ export default async function PublicCvPage() {
   const layout = normalizeCvLayout(profile.cvLayout);
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-12 px-4 py-10 md:px-6 print:px-0 print:py-0">
+    <div className="mx-auto flex max-w-3xl flex-col gap-12 px-4 py-10 md:px-6 print:gap-8 print:px-0 print:py-0">
       {/* Header */}
       <header className="flex flex-col gap-3">
-        <h1 className="text-3xl font-semibold wrap-anywhere">{profile.name}</h1>
+        <h1 className="text-3xl font-semibold wrap-anywhere print:text-2xl">{profile.name}</h1>
         {profile.location && profile.location.isRemote ? (
           <p className="text-sm text-muted">Remote</p>
         ) : null}
@@ -268,13 +252,13 @@ export default async function PublicCvPage() {
             rel="noreferrer"
             className="rounded-md border border-line px-3 py-1.5 text-xs font-medium hover:border-accent hover:text-accent-strong"
           >
-            View PDF
+            View original PDF
           </a>
           <a
             href="/cv/pdf?download=1"
             className="rounded-md border border-line px-3 py-1.5 text-xs font-medium hover:border-accent hover:text-accent-strong"
           >
-            Download PDF
+            Download original PDF
           </a>
           <PrintButton />
         </div>

@@ -15,6 +15,7 @@ import {
   PrefilterJobs,
   ResolveProfileSuggestion,
   ReviewProfileTexts,
+  RunAtsCheck,
   SaveApplicationDocument,
   SaveApplicationQuestionAnswer,
   SaveCvLayout,
@@ -47,6 +48,7 @@ import { createDocumentGenerator } from "@/infrastructure/ai/create-document-gen
 import { createJobMatcher } from "@/infrastructure/ai/create-job-matcher";
 import { createProfileReviewAnalyzer } from "@/infrastructure/ai/create-profile-review";
 import { createQuestionSimilarityAnalyzer } from "@/infrastructure/ai/create-question-similarity";
+import { UnpdfTextExtractor } from "@/infrastructure/pdf/unpdf-text-extractor";
 import { SentryLogger } from "@/infrastructure/logging/sentry-logger";
 import { ArbeitnowJobSource } from "@/infrastructure/job-sources/arbeitnow/arbeitnow-job-source";
 import { FixtureJobSource } from "@/infrastructure/job-sources/fixture/fixture-job-source";
@@ -80,6 +82,7 @@ export const cvExtractor = createCvExtractor(logger);
 export const jobMatcher = createJobMatcher(logger);
 export const documentGenerator = createDocumentGenerator(logger);
 export const profileReviewAnalyzer = createProfileReviewAnalyzer(logger);
+export const pdfTextExtractor = new UnpdfTextExtractor();
 export const questionSimilarityAnalyzer = createQuestionSimilarityAnalyzer(logger);
 
 // Settings read at request time: rows from /integrations win, env is the
@@ -170,6 +173,11 @@ export const resolveProfileSuggestion = new ResolveProfileSuggestion(
   candidateProfileRepository,
   profileSuggestionRepository,
   saveProfile,
+);
+export const runAtsCheck = new RunAtsCheck(
+  candidateProfileRepository,
+  uploadedCvRepository,
+  pdfTextExtractor,
 );
 export const saveSearchProfile = new SaveSearchProfile(searchProfileRepository);
 export const deleteSearchProfile = new DeleteSearchProfile(searchProfileRepository);

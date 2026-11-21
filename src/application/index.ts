@@ -5,6 +5,7 @@ export * from "./applications/find-question-similarities";
 export * from "./applications/question-similarity-schema";
 export * from "./applications/save-application-question-answer";
 export * from "./applications/update-status";
+export * from "./ats/run-ats-check";
 export * from "./cv/cv-extractor-port";
 export * from "./cv/profile-draft-schema";
 export * from "./documents/generate-application-document";

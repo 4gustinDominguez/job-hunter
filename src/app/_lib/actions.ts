@@ -36,6 +36,7 @@ import {
   prefilterJobs,
   resolveProfileSuggestion,
   reviewProfileTexts,
+  runAtsCheck,
   saveApplicationDocument,
   saveApplicationQuestionAnswer,
   saveCvLayout,
@@ -49,6 +50,7 @@ import {
 } from "./container";
 import type {
   ApplicationQuestionsState,
+  AtsCheckState,
   CvLayoutState,
   CvVersionsState,
   DocumentActionState,
@@ -577,6 +579,23 @@ export async function resolveProfileSuggestionAction(
       decision === "dismiss" ? "Suggestion dismissed." : "Suggestion applied to your profile.",
     error: false,
   };
+}
+
+export async function runAtsCheckAction(
+  _prevState: AtsCheckState,
+  _formData: FormData,
+): Promise<AtsCheckState> {
+  await requireSession();
+  try {
+    const report = await runAtsCheck.run();
+    return { report };
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return { message: error.message, error: true };
+    }
+    console.warn("[ats] check failed:", error);
+    return { message: "The ATS check failed unexpectedly. Try again.", error: true };
+  }
 }
 
 export async function saveSearchProfileAction(

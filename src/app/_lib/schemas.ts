@@ -6,6 +6,7 @@ import {
   skillItemSchema,
 } from "@/application/profile/profile-schemas";
 import type { SaveProfileInput } from "@/application/profile/save-profile";
+import type { AtsReport } from "@/domain/ats/ats-report";
 import { MANAGED_JOB_SOURCES, EMPLOYMENT_TYPES, SENIORITIES } from "@/domain/job/enums";
 import { COUNTRY_OPTIONS } from "@/domain/shared/country";
 import { REMOTE_PREFERENCES } from "@/domain/shared/remote-preference";
@@ -97,6 +98,12 @@ export interface CvLayoutState {
 
 export interface CvVersionsState {
   message: string;
+}
+
+export interface AtsCheckState {
+  report?: AtsReport;
+  message?: string;
+  error?: boolean;
 }
 
 export interface SuggestionsState {

@@ -12,6 +12,23 @@ export const SKILL_LEVELS = ["BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"] a
 
 export type SkillLevel = (typeof SKILL_LEVELS)[number];
 
+export const SKILL_CATEGORY_LABELS: Record<SkillCategory, string> = {
+  PROGRAMMING: "Programming",
+  FRAMEWORK: "Frameworks",
+  TOOL: "Tools",
+  SOFT_SKILL: "Soft skills",
+  LANGUAGE: "Languages",
+};
+
+/** Rendering order shared by the /cv page and the JSON Resume export. */
+export const SKILL_CATEGORY_ORDER: SkillCategory[] = [
+  "PROGRAMMING",
+  "FRAMEWORK",
+  "TOOL",
+  "SOFT_SKILL",
+  "LANGUAGE",
+];
+
 export interface Skill {
   id: string;
   name: string;

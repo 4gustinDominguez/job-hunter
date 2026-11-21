@@ -12,6 +12,7 @@ import { CvLayoutEditor } from "./cv-layout-editor";
 import { CvVersionsPanel, type CvVersionRow } from "./cv-versions-panel";
 import { ProfileWorkspace } from "./profile-workspace";
 import { SuggestionsPanel } from "./suggestions-panel";
+import { AtsPanel } from "./ats-panel";
 
 const NO_VERSIONS: CvVersionRow[] = [];
 const NO_SUGGESTIONS: ProfileSuggestion[] = [];
@@ -142,6 +143,20 @@ export default async function ProfilePage() {
             and impact — never inventing facts. Apply writes the chosen text into your profile.
           </p>
           <SuggestionsPanel profile={profile} suggestions={suggestions} />
+        </section>
+      ) : null}
+
+      {profile ? (
+        <section
+          aria-label="ATS check"
+          className="rounded-lg border border-line bg-surface p-4 print:hidden"
+        >
+          <h2 className="text-sm font-medium">ATS check</h2>
+          <p className="mt-1 text-xs text-muted">
+            Scores your exported CV (contact, experience, education, skills, keywords, dates) and
+            what an applicant tracking system actually reads in the PDF you upload.
+          </p>
+          <AtsPanel />
         </section>
       ) : null}
     </div>
