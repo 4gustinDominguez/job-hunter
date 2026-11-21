@@ -112,7 +112,8 @@ export default async function ProfilePage() {
             >
               /cv
             </a>{" "}
-            page and of the PDF it prints. Hidden sections are left out of both.
+            page and of the PDF it prints. Rename a section inline — empty field means its default
+            name; hidden sections are left out of both.
           </p>
           <CvLayoutEditor layout={normalizeCvLayout(profile.cvLayout)} />
         </section>

@@ -34,20 +34,32 @@ export function CvLayoutEditor({ layout }: { layout: CvLayout }) {
     );
   };
 
+  // Empty title = the section's default label (normalize drops it on save).
+  const setTitle = (index: number, title: string): void => {
+    setEntries((prev) => prev.map((entry, i) => (i === index ? { ...entry, title } : entry)));
+  };
+
   return (
     <form action={formAction} className="mt-3 flex flex-col gap-3">
       <input type="hidden" name="layout" value={JSON.stringify(entries)} />
       <ul className="flex flex-col gap-1.5">
         {entries.map((entry, index) => {
-          const label = entry.title ?? CV_SECTION_LABELS[entry.section];
+          const defaultLabel = CV_SECTION_LABELS[entry.section];
           return (
             <li
               key={entry.section}
-              className={`flex items-center gap-2 rounded-md border border-line px-3 py-2 ${
+              className={`flex flex-wrap items-center gap-2 rounded-md border border-line px-3 py-2 ${
                 entry.visible ? "bg-paper" : "bg-paper/40 opacity-60"
               }`}
             >
-              <span className="min-w-0 flex-1 truncate text-sm">{label}</span>
+              <input
+                type="text"
+                value={entry.title ?? ""}
+                placeholder={defaultLabel}
+                aria-label={`Title of the ${defaultLabel} section`}
+                onChange={(event) => setTitle(index, event.target.value)}
+                className="h-8 min-w-40 flex-1 rounded border border-line bg-surface px-2 text-sm"
+              />
               {!entry.visible ? (
                 <span className="rounded-full border border-line px-2 py-0.5 text-[10px] text-muted">
                   hidden
@@ -58,7 +70,7 @@ export function CvLayoutEditor({ layout }: { layout: CvLayout }) {
                   type="button"
                   onClick={() => move(index, -1)}
                   disabled={index === 0}
-                  aria-label={`Move ${label} up`}
+                  aria-label={`Move ${defaultLabel} up`}
                   title="Move up"
                   className={buttonClass}
                 >
@@ -68,7 +80,7 @@ export function CvLayoutEditor({ layout }: { layout: CvLayout }) {
                   type="button"
                   onClick={() => move(index, 1)}
                   disabled={index === entries.length - 1}
-                  aria-label={`Move ${label} down`}
+                  aria-label={`Move ${defaultLabel} down`}
                   title="Move down"
                   className={buttonClass}
                 >
@@ -77,7 +89,7 @@ export function CvLayoutEditor({ layout }: { layout: CvLayout }) {
                 <button
                   type="button"
                   onClick={() => toggle(index)}
-                  aria-label={`${entry.visible ? "Hide" : "Show"} ${label}`}
+                  aria-label={`${entry.visible ? "Hide" : "Show"} ${defaultLabel}`}
                   title={entry.visible ? "Hide section" : "Show section"}
                   className={buttonClass}
                 >

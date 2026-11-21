@@ -29,6 +29,7 @@ export * from "./profile/profile-suggestion-schema";
 export * from "./profile/resolve-profile-suggestion";
 export * from "./profile/review-profile-texts";
 export * from "./profile/save-cv-layout";
+export * from "./profile/save-cv-template";
 export * from "./profile/save-cv-version";
 export * from "./profile/save-profile";
 export * from "./search-profiles/delete-search-profile";

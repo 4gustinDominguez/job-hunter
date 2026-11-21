@@ -24,8 +24,10 @@ export class SaveProfile {
       id: input.id || existing?.id || crypto.randomUUID(),
       name,
       email,
-      // The layout is edited on its own — saves that don't mention it keep it.
+      // The layout/template are edited on their own — saves that don't mention
+      // them keep them.
       cvLayout: input.cvLayout ?? existing?.cvLayout ?? undefined,
+      cvTemplate: input.cvTemplate ?? existing?.cvTemplate ?? undefined,
     };
     return this.profiles.save(profile);
   }

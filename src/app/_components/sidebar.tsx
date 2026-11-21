@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: "/applications", label: "Applications" },
   { href: "/search-profiles", label: "Search profiles" },
   { href: "/profile", label: "Profile" },
+  { href: "/cv/builder", label: "CV builder" },
   { href: "/integrations", label: "Integrations" },
 ] as const;
 

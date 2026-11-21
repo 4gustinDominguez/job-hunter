@@ -5,6 +5,7 @@ import type { Education } from "@/domain/candidate/education";
 import type { Experience } from "@/domain/candidate/experience";
 import type { Project } from "@/domain/candidate/project";
 import type { CvLayout } from "@/domain/candidate/cv-layout";
+import type { CvTemplateConfig } from "@/domain/candidate/cv-template";
 import type { Location } from "@/domain/shared/location";
 
 export const candidateProfiles = pgTable("candidate_profiles", {
@@ -18,6 +19,7 @@ export const candidateProfiles = pgTable("candidate_profiles", {
   projects: jsonb("projects").$type<Project[]>().notNull(),
   education: jsonb("education").$type<Education[]>().notNull(),
   cvLayout: jsonb("cv_layout").$type<CvLayout>(),
+  cvTemplate: jsonb("cv_template").$type<CvTemplateConfig>(),
   preferences: jsonb("preferences").$type<JobPreferences>().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true })

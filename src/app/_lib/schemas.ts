@@ -100,6 +100,10 @@ export interface CvVersionsState {
   message: string;
 }
 
+export interface CvTemplateState {
+  message: string;
+}
+
 export interface AtsCheckState {
   report?: AtsReport;
   message?: string;

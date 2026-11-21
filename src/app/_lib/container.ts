@@ -19,6 +19,7 @@ import {
   SaveApplicationDocument,
   SaveApplicationQuestionAnswer,
   SaveCvLayout,
+  SaveCvTemplate,
   SaveCvVersion,
   SaveIntegrationSettings,
   SaveProfile,
@@ -158,6 +159,7 @@ export const findQuestionSimilarities = new FindQuestionSimilarities(
 );
 export const saveProfile = new SaveProfile(candidateProfileRepository);
 export const saveCvLayout = new SaveCvLayout(candidateProfileRepository, saveProfile);
+export const saveCvTemplate = new SaveCvTemplate(candidateProfileRepository, saveProfile);
 export const saveCvVersion = new SaveCvVersion(candidateProfileRepository, cvVersionRepository);
 export const loadCvVersion = new LoadCvVersion(
   candidateProfileRepository,

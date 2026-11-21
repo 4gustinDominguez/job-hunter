@@ -13,11 +13,18 @@ const SESSION_COOKIE = "session";
 
 /** Paths reachable without a session. /api/cron authenticates via CRON_SECRET;
  * /api/health is a public liveness probe (no secrets in the payload);
- * /cv (and /cv/pdf) is the intentionally public, shareable CV page. */
-const PUBLIC_PREFIXES = ["/login", "/api/cron", "/api/health", "/cv"];
+ * /cv and its exports (PDF, resume.json) are the intentionally public,
+ * shareable CV. Exact matches only — anything else under /cv (the builder)
+ * stays behind the session. */
+const PUBLIC_EXACT = new Set(["/cv", "/cv/pdf", "/cv/resume.json"]);
+const PUBLIC_PREFIXES = ["/login", "/api/cron", "/api/health"];
 
 export function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  const path = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  return (
+    PUBLIC_EXACT.has(path) ||
+    PUBLIC_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
+  );
 }
 
 export async function isAuthenticated(sessionToken: string | undefined): Promise<boolean> {

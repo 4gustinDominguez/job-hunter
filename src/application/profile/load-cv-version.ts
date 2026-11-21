@@ -5,6 +5,7 @@ import { cvSnapshotSchema } from "@/application/profile/profile-schemas";
 import type { SaveProfile } from "@/application/profile/save-profile";
 import type { CandidateProfile } from "@/domain/candidate/candidate-profile";
 import { normalizeCvLayout } from "@/domain/candidate/cv-layout";
+import { normalizeCvTemplate } from "@/domain/candidate/cv-template";
 
 export class LoadCvVersion {
   constructor(
@@ -41,6 +42,7 @@ export class LoadCvVersion {
       projects: snapshot.projects,
       education: snapshot.education,
       cvLayout: normalizeCvLayout(snapshot.cvLayout),
+      cvTemplate: normalizeCvTemplate(snapshot.cvTemplate),
     });
   }
 }

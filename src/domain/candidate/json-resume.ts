@@ -64,12 +64,14 @@ function toJsonLocation(location: Location | undefined) {
 
 /** The public CV as JSON Resume data — one file any theme/tool/ATS check can consume. */
 export function toJsonResume(profile: CandidateProfile): JsonResume {
-  const experience = [...profile.experience].toSorted(
-    (a, b) => b.startDate.getTime() - a.startDate.getTime(),
-  );
-  const latestPosition = experience[0]?.position?.trim();
+  // Display order IS the array order from /profile's JSON (the user edits it
+  // deliberately) — no implicit date sorting. Only the headline label is
+  // date-based: the most recent position, wherever it sits in the list.
+  const latestPosition = [...profile.experience]
+    .toSorted((a, b) => b.startDate.getTime() - a.startDate.getTime())[0]
+    ?.position?.trim();
 
-  const work = experience.map((item) => ({
+  const work = profile.experience.map((item) => ({
     name: item.company,
     position: item.position,
     startDate: isoDate(item.startDate),
@@ -79,16 +81,14 @@ export function toJsonResume(profile: CandidateProfile): JsonResume {
     keywords: filled(item.skills),
   }));
 
-  const education = [...profile.education]
-    .toSorted((a, b) => b.startDate.getTime() - a.startDate.getTime())
-    .map((item) => ({
-      institution: item.institution,
-      studyType: item.degree,
-      area: item.field,
-      startDate: isoDate(item.startDate),
-      endDate: item.endDate ? isoDate(item.endDate) : undefined,
-      courses: filled(item.achievements ?? []),
-    }));
+  const education = profile.education.map((item) => ({
+    institution: item.institution,
+    studyType: item.degree,
+    area: item.field,
+    startDate: isoDate(item.startDate),
+    endDate: item.endDate ? isoDate(item.endDate) : undefined,
+    courses: filled(item.achievements ?? []),
+  }));
 
   const skills = SKILL_CATEGORY_ORDER.flatMap((category) => {
     const keywords = filled(

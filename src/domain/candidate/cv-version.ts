@@ -1,4 +1,5 @@
 import type { CvLayout } from "@/domain/candidate/cv-layout";
+import type { CvTemplateConfig } from "@/domain/candidate/cv-template";
 import type { Education } from "@/domain/candidate/education";
 import type { Experience } from "@/domain/candidate/experience";
 import type { Project } from "@/domain/candidate/project";
@@ -21,6 +22,7 @@ export interface CvSnapshot {
   projects: Project[];
   education: Education[];
   cvLayout?: CvLayout;
+  cvTemplate?: CvTemplateConfig;
 }
 
 export interface CvVersion {

@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { SKILL_CATEGORIES, SKILL_LEVELS } from "@/domain/candidate/skill";
 import { CV_SECTIONS } from "@/domain/candidate/cv-layout";
+import {
+  CV_TEMPLATE_PHOTO_POSITIONS,
+  CV_TEMPLATE_PHOTO_SHAPES,
+  CV_TEMPLATES,
+} from "@/domain/candidate/cv-template";
 
 export const isoDateString = z
   .string()
@@ -117,4 +122,20 @@ export const cvSnapshotSchema = z.object({
     }),
   ),
   cvLayout: cvLayoutSchema.optional(),
+  cvTemplate: z
+    .object({
+      template: z.enum(CV_TEMPLATES),
+      imageUrl: z.string().default(""),
+      photoShape: z.enum(CV_TEMPLATE_PHOTO_SHAPES).default("square"),
+      photoPosition: z.enum(CV_TEMPLATE_PHOTO_POSITIONS).default("right"),
+      fields: z.object({
+        photo: z.boolean().default(true),
+        email: z.boolean().default(true),
+        phone: z.boolean().default(true),
+        location: z.boolean().default(true),
+        projectUrls: z.boolean().default(true),
+        dates: z.boolean().default(true),
+      }),
+    })
+    .optional(),
 });

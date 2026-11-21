@@ -3,6 +3,7 @@ import type { CandidateProfileRepositoryPort } from "@/application/ports/candida
 import type { CvVersionRepositoryPort } from "@/application/ports/cv-version-repository-port";
 import type { CandidateProfile } from "@/domain/candidate/candidate-profile";
 import { normalizeCvLayout } from "@/domain/candidate/cv-layout";
+import { normalizeCvTemplate } from "@/domain/candidate/cv-template";
 import type { CvSnapshot, CvVersion } from "@/domain/candidate/cv-version";
 
 const MAX_LABEL_LENGTH = 80;
@@ -28,6 +29,7 @@ function snapshotOf(profile: CandidateProfile): CvSnapshot {
     projects: profile.projects,
     education: profile.education,
     cvLayout: normalizeCvLayout(profile.cvLayout),
+    cvTemplate: normalizeCvTemplate(profile.cvTemplate),
   };
 }
 

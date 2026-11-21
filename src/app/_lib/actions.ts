@@ -16,6 +16,7 @@ import {
 import { requireSession } from "./auth";
 import { criteriaFromProfile } from "./search-criteria";
 import type { ApplicationStatus } from "@/domain/application/enums";
+import { normalizeCvTemplate } from "@/domain/candidate/cv-template";
 import type { DocumentKind } from "@/domain/documents/generated-document";
 import type { JobSearchCriteria } from "@/domain/search/search-profile";
 import {
@@ -40,6 +41,7 @@ import {
   saveApplicationDocument,
   saveApplicationQuestionAnswer,
   saveCvLayout,
+  saveCvTemplate,
   saveCvVersion,
   saveIntegrationSettings,
   saveProfile,
@@ -52,6 +54,7 @@ import type {
   ApplicationQuestionsState,
   AtsCheckState,
   CvLayoutState,
+  CvTemplateState,
   CvVersionsState,
   DocumentActionState,
   FetchJobsState,
@@ -485,6 +488,31 @@ export async function saveCvLayoutAction(
   revalidatePath("/profile");
   revalidatePath("/cv");
   return { message: "Layout saved." };
+}
+
+export async function saveCvTemplateAction(
+  _prevState: CvTemplateState,
+  formData: FormData,
+): Promise<CvTemplateState> {
+  await requireSession();
+  const raw = String(formData.get("config") ?? "{}");
+  let payload: unknown;
+  try {
+    payload = JSON.parse(raw);
+  } catch {
+    return { message: "Template settings could not be read." };
+  }
+  try {
+    await saveCvTemplate.run(normalizeCvTemplate(payload));
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return { message: error.message };
+    }
+    throw error;
+  }
+  revalidatePath("/cv");
+  revalidatePath("/cv/builder");
+  return { message: "Template saved." };
 }
 
 export async function saveCvVersionAction(
