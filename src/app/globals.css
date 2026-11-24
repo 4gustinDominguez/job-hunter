@@ -47,6 +47,24 @@ body {
     color: #000;
   }
 
+  /* Section headings stay with their content (no orphaned titles). */
+  h2 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* No single stray line of a paragraph at the top/bottom of a page. */
+  p {
+    orphans: 2;
+    widows: 2;
+  }
+
+  /* Long entries may flow across pages, but keep at least two lines together. */
+  li {
+    orphans: 2;
+    widows: 2;
+  }
+
   /* Classic single-column resume: links read as plain black text. */
   a {
     color: inherit !important;

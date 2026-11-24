@@ -112,7 +112,7 @@ export function ClassicTemplate({ resume, config, layout }: ClassicTemplateProps
       resume.skills.length > 0 ? (
         <div className="flex flex-col gap-1.5">
           {resume.skills.map((group) => (
-            <p key={group.name} className="max-w-[72ch] text-sm">
+            <p key={group.name} className="max-w-[72ch] text-sm print:break-inside-avoid">
               <span className="font-medium">{group.name}:</span>{" "}
               <span className="text-ink/90">{group.keywords.join(", ")}</span>
             </p>
@@ -125,7 +125,7 @@ export function ClassicTemplate({ resume, config, layout }: ClassicTemplateProps
           {resume.work.map((job) => (
             <li
               key={`${job.name}-${job.startDate}-${job.position}`}
-              className="flex flex-col gap-0.5 print:break-inside-avoid"
+              className="flex flex-col gap-0.5"
             >
               <div className="flex flex-wrap items-baseline justify-between gap-x-3">
                 <h3 className="font-medium">{job.position}</h3>
