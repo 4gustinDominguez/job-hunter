@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import type { SaveProfileInput } from "@/application/profile/save-profile";
 import { importProfileFromCvAction } from "@/app/_lib/actions";
 import type { ImportCvState } from "@/app/_lib/schemas";
@@ -24,6 +24,16 @@ export function ProfileWorkspace({ profile }: { profile?: CandidateProfile }) {
       setDraft(importState.draft);
       setImported(true);
     }
+  }
+
+  // The server profile changed (a version was loaded) → drop the stale draft
+  // during render, and remount the form below, so it never keeps — and could
+  // save back — the previous content.
+  const profileJson = useMemo(() => JSON.stringify(profile ?? null), [profile]);
+  const [prevProfileJson, setPrevProfileJson] = useState(profileJson);
+  if (prevProfileJson !== profileJson) {
+    setPrevProfileJson(profileJson);
+    setDraft(profile);
   }
 
   return (
@@ -63,7 +73,11 @@ export function ProfileWorkspace({ profile }: { profile?: CandidateProfile }) {
         </form>
       </section>
 
-      <ProfileForm key={imported ? "imported" : "initial"} profile={draft} imported={imported} />
+      <ProfileForm
+        key={`${imported ? "imported" : "initial"}:${profileJson}`}
+        profile={draft}
+        imported={imported}
+      />
     </div>
   );
 }

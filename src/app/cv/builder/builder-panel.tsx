@@ -56,6 +56,15 @@ export function BuilderPanel({
   const [state, saveAction, pending] = useActionState(saveCvTemplateAction, initialState);
   const [config, setConfig] = useState<CvTemplateConfig>(initialConfig);
 
+  // Server config changed (a version was loaded) → sync during render,
+  // dropping unsaved local edits only when the server truth actually differs.
+  const initialJson = JSON.stringify(initialConfig);
+  const [prevInitialJson, setPrevInitialJson] = useState(initialJson);
+  if (prevInitialJson !== initialJson) {
+    setPrevInitialJson(initialJson);
+    setConfig(initialConfig);
+  }
+
   const showPhoto = config.fields.photo;
 
   const toggleField = (field: CvTemplateField): void => {
@@ -64,6 +73,10 @@ export function BuilderPanel({
 
   const setPhotoUrl = (value: string): void => {
     setConfig((prev) => ({ ...prev, imageUrl: value }));
+  };
+
+  const setHeadline = (value: string): void => {
+    setConfig((prev) => ({ ...prev, headline: value }));
   };
 
   const setPhotoShape = (photoShape: CvTemplatePhotoShape): void => {
@@ -93,6 +106,24 @@ export function BuilderPanel({
             <option value="classic">classic</option>
           </select>
           <p className="text-[11px] text-muted">The only template for now — more later.</p>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label htmlFor="cv-headline" className="text-xs text-muted">
+            Headline
+          </label>
+          <input
+            id="cv-headline"
+            type="text"
+            value={config.headline}
+            onChange={(event) => setHeadline(event.target.value)}
+            placeholder="Auto: most recent position"
+            maxLength={120}
+            className={inputClass}
+          />
+          <p className="text-[11px] text-muted">
+            Shown under your name — empty means the most recent position.
+          </p>
         </div>
 
         <div className="flex flex-col gap-1">

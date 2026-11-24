@@ -1,4 +1,5 @@
 import { candidateProfileRepository } from "@/app/_lib/container";
+import { normalizeCvTemplate } from "@/domain/candidate/cv-template";
 import { toJsonResume } from "@/domain/candidate/json-resume";
 
 export const dynamic = "force-dynamic";
@@ -16,11 +17,14 @@ export async function GET(): Promise<Response> {
     });
   }
 
-  return new Response(JSON.stringify(toJsonResume(profile), null, 2), {
-    headers: {
-      "content-type": "application/json; charset=utf-8",
-      "content-disposition": 'inline; filename="resume.json"',
-      "cache-control": "public, max-age=300",
+  return new Response(
+    JSON.stringify(toJsonResume(profile, normalizeCvTemplate(profile.cvTemplate)), null, 2),
+    {
+      headers: {
+        "content-type": "application/json; charset=utf-8",
+        "content-disposition": 'inline; filename="resume.json"',
+        "cache-control": "public, max-age=300",
+      },
     },
-  });
+  );
 }

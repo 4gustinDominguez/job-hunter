@@ -42,7 +42,11 @@ export class LoadCvVersion {
       projects: snapshot.projects,
       education: snapshot.education,
       cvLayout: normalizeCvLayout(snapshot.cvLayout),
-      cvTemplate: normalizeCvTemplate(snapshot.cvTemplate),
+      // Versions saved before template configs existed carry no look — keep
+      // the current one instead of resetting it to defaults.
+      cvTemplate: snapshot.cvTemplate
+        ? normalizeCvTemplate(snapshot.cvTemplate)
+        : normalizeCvTemplate(current.cvTemplate),
     });
   }
 }

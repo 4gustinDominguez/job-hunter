@@ -27,6 +27,7 @@ import {
   createApplication,
   cvExtractor,
   deleteApplicationQuestion,
+  deleteCvVersion,
   deleteSearchProfile,
   findQuestionSimilarities,
   generateApplicationDocument,
@@ -418,12 +419,9 @@ export async function importProfileFromCvAction(
   }
 }
 
-export async function saveProfileAction(
-  _prevState: ProfileFormState,
-  formData: FormData,
-): Promise<ProfileFormState> {
-  await requireSession();
-  const raw = {
+/** All profile-form fields as the form schema sees them (shared by save + version). */
+function readProfileForm(formData: FormData): Record<string, unknown> {
+  return {
     id: String(formData.get("id") ?? ""),
     name: String(formData.get("name") ?? ""),
     email: String(formData.get("email") ?? ""),
@@ -446,6 +444,14 @@ export async function saveProfileAction(
     projects: String(formData.get("projects") ?? "[]"),
     education: String(formData.get("education") ?? "[]"),
   };
+}
+
+export async function saveProfileAction(
+  _prevState: ProfileFormState,
+  formData: FormData,
+): Promise<ProfileFormState> {
+  await requireSession();
+  const raw = readProfileForm(formData);
   const parsed = profileFormSchema.safeParse(raw);
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors, message: "" };
@@ -520,13 +526,26 @@ export async function saveCvVersionAction(
   formData: FormData,
 ): Promise<CvVersionsState> {
   await requireSession();
+  // Versions snapshot the form AS IT IS (unsaved edits included) and never
+  // write to the profile — only Save profile or Load change the content.
+  const parsed = profileFormSchema.safeParse(readProfileForm(formData));
+  if (!parsed.success) {
+    const first = Object.values(parsed.error.flatten().fieldErrors).flat()[0];
+    return {
+      ok: false,
+      message: first ? `Fix the form first: ${first}` : "The form has errors.",
+    };
+  }
   try {
-    const version = await saveCvVersion.run(String(formData.get("label") ?? ""));
+    const version = await saveCvVersion.run(
+      String(formData.get("label") ?? ""),
+      toSaveProfileInput(parsed.data),
+    );
     revalidatePath("/profile");
-    return { message: `Saved "${version.label}".` };
+    return { ok: true, message: `Saved "${version.label}".` };
   } catch (error) {
     if (error instanceof ValidationError) {
-      return { message: error.message };
+      return { ok: false, message: error.message };
     }
     throw error;
   }
@@ -624,6 +643,18 @@ export async function runAtsCheckAction(
     console.warn("[ats] check failed:", error);
     return { message: "The ATS check failed unexpectedly. Try again.", error: true };
   }
+}
+
+export async function deleteCvVersionAction(formData: FormData): Promise<void> {
+  await requireSession();
+  const versionId = String(formData.get("versionId") ?? "");
+  try {
+    await deleteCvVersion.run(versionId);
+  } catch (error) {
+    if (error instanceof NotFoundError) return; // already gone — nothing to do
+    throw error;
+  }
+  revalidatePath("/profile");
 }
 
 export async function saveSearchProfileAction(

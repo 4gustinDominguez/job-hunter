@@ -23,6 +23,7 @@ export * from "./matching/job-analysis-schema";
 export * from "./matching/prefilter";
 export * from "./matching/prefilter-jobs";
 export * from "./ports";
+export * from "./profile/delete-cv-version";
 export * from "./profile/load-cv-version";
 export * from "./profile/profile-schemas";
 export * from "./profile/profile-suggestion-schema";

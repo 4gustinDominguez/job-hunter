@@ -4,6 +4,7 @@ import type { PdfTextPort } from "@/application/ports/pdf-text-port";
 import type { UploadedCvRepositoryPort } from "@/application/ports/uploaded-cv-repository-port";
 import type { AtsCheck, AtsReport } from "@/domain/ats/ats-report";
 import { checkPdfReadability, scoreResume, summarizeAts } from "@/domain/ats/score-ats";
+import { normalizeCvTemplate } from "@/domain/candidate/cv-template";
 import { toJsonResume } from "@/domain/candidate/json-resume";
 
 export class RunAtsCheck {
@@ -19,7 +20,9 @@ export class RunAtsCheck {
       throw new ValidationError("profile", "No profile to check yet — save one first.");
     }
 
-    const checks: AtsCheck[] = scoreResume(toJsonResume(profile));
+    const checks: AtsCheck[] = scoreResume(
+      toJsonResume(profile, normalizeCvTemplate(profile.cvTemplate)),
+    );
 
     const cv = await this.uploadedCvs.get();
     let text = "";

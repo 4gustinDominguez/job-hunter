@@ -5,4 +5,5 @@ export interface CvVersionRepositoryPort {
   listByProfile(profileId: string): Promise<CvVersion[]>;
   getById(id: string): Promise<CvVersion | null>;
   save(version: CvVersion): Promise<CvVersion>;
+  remove(id: string): Promise<void>;
 }

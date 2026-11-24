@@ -31,8 +31,8 @@ export default async function PublicCvPage() {
     );
   }
 
-  const resume = toJsonResume(profile);
   const config = normalizeCvTemplate(profile.cvTemplate);
+  const resume = toJsonResume(profile, config);
   const layout = normalizeCvLayout(profile.cvLayout);
 
   const hasAnyContent = Boolean(

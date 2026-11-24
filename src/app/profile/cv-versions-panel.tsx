@@ -1,13 +1,16 @@
 "use client";
 
-/* oxlint-disable jsx-no-new-function-as-prop -- the Load confirm dialog must close over its own version; this component renders on interaction, not in a hot loop */
+/* oxlint-disable jsx-no-new-function-as-prop -- the Load confirm dialog must close over its own version, and Save reads the profile form on click; this component renders on interaction, not in a hot loop */
 
-import { useActionState } from "react";
-import { loadCvVersionAction, saveCvVersionAction } from "@/app/_lib/actions";
+import { useActionState, useState } from "react";
+import {
+  deleteCvVersionAction,
+  loadCvVersionAction,
+  saveCvVersionAction,
+} from "@/app/_lib/actions";
 import { formatDate } from "@/app/_lib/format";
 import type { CvVersionsState } from "@/app/_lib/schemas";
 
-const initialSave: CvVersionsState = { message: "" };
 const initialLoad: CvVersionsState = { message: "" };
 
 const buttonClass =
@@ -22,30 +25,63 @@ export interface CvVersionRow {
 }
 
 export function CvVersionsPanel({ versions }: { versions: CvVersionRow[] }) {
-  const [saveState, saveAction, savePending] = useActionState(saveCvVersionAction, initialSave);
   const [loadState, loadAction, loadPending] = useActionState(loadCvVersionAction, initialLoad);
+  const [label, setLabel] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveState, setSaveState] = useState<CvVersionsState>({ message: "" });
+
+  // Versions snapshot the profile FORM (unsaved edits included) — read it
+  // directly from the DOM instead of the saved profile.
+  const saveVersion = async (): Promise<void> => {
+    setSaving(true);
+    try {
+      const profileForm = document.getElementById("profile-form");
+      const data = new FormData();
+      if (profileForm instanceof HTMLFormElement) {
+        for (const [key, value] of new FormData(profileForm)) {
+          if (typeof value === "string") data.append(key, value);
+        }
+      }
+      data.append("label", label);
+      const result = await saveCvVersionAction({ message: "" }, data);
+      setSaveState(result);
+      if (result.ok) setLabel("");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="mt-3 flex flex-col gap-3">
-      <form action={saveAction} className="flex flex-wrap items-end gap-3">
+      <div className="flex flex-wrap items-end gap-3">
         <div className="flex min-w-56 flex-col gap-1">
           <label htmlFor="cv-version-label" className="text-xs text-muted">
             Label
           </label>
           <input
             id="cv-version-label"
-            name="label"
+            value={label}
+            onChange={(event) => setLabel(event.target.value)}
             placeholder="e.g. Backend-focused version"
             className="h-9 rounded-md border border-line bg-paper px-3 text-sm"
           />
         </div>
-        <button type="submit" disabled={savePending} className={buttonClass}>
-          {savePending ? "Saving…" : "Save version"}
+        <button
+          type="button"
+          onClick={() => {
+            void saveVersion();
+          }}
+          disabled={saving}
+          className={buttonClass}
+        >
+          {saving ? "Saving…" : "Save version"}
         </button>
         {saveState.message ? (
-          <output className="text-xs text-muted">{saveState.message}</output>
+          <output className={`text-xs ${saveState.ok ? "text-muted" : "text-danger"}`}>
+            {saveState.message}
+          </output>
         ) : null}
-      </form>
+      </div>
 
       {versions.length === 0 ? (
         <p className="text-xs text-muted">
@@ -76,6 +112,22 @@ export function CvVersionsPanel({ versions }: { versions: CvVersionRow[] }) {
                 <input type="hidden" name="versionId" value={version.id} />
                 <button type="submit" disabled={loadPending} className={loadButtonClass}>
                   {loadPending ? "Loading…" : "Load"}
+                </button>
+              </form>
+              <form
+                action={deleteCvVersionAction}
+                onSubmit={(event) => {
+                  if (!confirm(`Delete "${version.label}" permanently?`)) {
+                    event.preventDefault();
+                  }
+                }}
+              >
+                <input type="hidden" name="versionId" value={version.id} />
+                <button
+                  type="submit"
+                  className="h-7 rounded-md border border-line px-3 text-xs font-medium text-muted hover:border-danger hover:text-danger"
+                >
+                  Delete
                 </button>
               </form>
             </li>

@@ -51,4 +51,8 @@ export class DrizzleCvVersionRepository implements CvVersionRepositoryPort {
       .returning();
     return toDomain(row);
   }
+
+  async remove(id: string): Promise<void> {
+    await this.database.delete(cvVersions).where(eq(cvVersions.id, id));
+  }
 }

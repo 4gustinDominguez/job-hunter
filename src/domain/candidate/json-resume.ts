@@ -1,5 +1,7 @@
 import type { CandidateProfile } from "@/domain/candidate/candidate-profile";
 import type { Location } from "@/domain/shared/location";
+import { defaultCvTemplate } from "@/domain/candidate/cv-template";
+import type { CvTemplateConfig } from "@/domain/candidate/cv-template";
 import { SKILL_CATEGORY_LABELS, SKILL_CATEGORY_ORDER } from "@/domain/candidate/skill";
 
 export const JSON_RESUME_SCHEMA =
@@ -63,13 +65,18 @@ function toJsonLocation(location: Location | undefined) {
 }
 
 /** The public CV as JSON Resume data — one file any theme/tool/ATS check can consume. */
-export function toJsonResume(profile: CandidateProfile): JsonResume {
+export function toJsonResume(
+  profile: CandidateProfile,
+  config: CvTemplateConfig = defaultCvTemplate(),
+): JsonResume {
   // Display order IS the array order from /profile's JSON (the user edits it
-  // deliberately) — no implicit date sorting. Only the headline label is
-  // date-based: the most recent position, wherever it sits in the list.
+  // deliberately) — no implicit date sorting. The headline is the custom one
+  // from the template when set, otherwise the most recent position, wherever
+  // it sits in the list.
   const latestPosition = [...profile.experience]
     .toSorted((a, b) => b.startDate.getTime() - a.startDate.getTime())[0]
     ?.position?.trim();
+  const label = config.headline.trim() || latestPosition;
 
   const work = profile.experience.map((item) => ({
     name: item.company,
@@ -109,7 +116,7 @@ export function toJsonResume(profile: CandidateProfile): JsonResume {
     $schema: JSON_RESUME_SCHEMA,
     basics: {
       name: profile.name,
-      label: latestPosition,
+      label,
       email: profile.email,
       phone: profile.phone?.trim() || undefined,
       location: toJsonLocation(profile.location),

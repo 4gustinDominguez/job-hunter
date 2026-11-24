@@ -26,8 +26,8 @@ export default async function CvBuilderPage() {
     );
   }
 
-  const resume = toJsonResume(profile);
   const config = normalizeCvTemplate(profile.cvTemplate);
+  const resume = toJsonResume(profile, config);
   const layout = normalizeCvLayout(profile.cvLayout);
 
   return (

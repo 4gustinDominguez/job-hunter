@@ -55,6 +55,9 @@ function Highlights({ items }: { items: string[] }) {
  */
 export function ClassicTemplate({ resume, config, layout }: ClassicTemplateProps) {
   const { basics } = resume;
+  // Custom headline wins while typing in the builder preview; once saved,
+  // resume.basics.label already carries it.
+  const headline = config.headline.trim() || basics.label;
 
   const locationParts = [basics.location?.city, basics.location?.region, basics.location?.country]
     .map((part) => part?.trim())
@@ -219,9 +222,7 @@ export function ClassicTemplate({ resume, config, layout }: ClassicTemplateProps
       >
         <div className={`flex min-w-0 flex-col gap-1 ${photoOnTop ? "items-center" : "flex-1"}`}>
           <h1 className="text-3xl font-semibold wrap-anywhere print:text-2xl">{basics.name}</h1>
-          {basics.label ? (
-            <p className="text-sm font-medium text-accent-strong">{basics.label}</p>
-          ) : null}
+          {headline ? <p className="text-sm font-medium text-accent-strong">{headline}</p> : null}
           {contact.length > 0 ? (
             <p
               className={`flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted ${

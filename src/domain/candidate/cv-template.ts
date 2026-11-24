@@ -26,6 +26,8 @@ export interface CvTemplateConfig {
   template: CvTemplateName;
   /** Photo URL for the header — presentation only, nothing is stored. */
   imageUrl: string;
+  /** Custom headline; empty = the most recent position (computed). */
+  headline: string;
   photoShape: CvTemplatePhotoShape;
   photoPosition: CvTemplatePhotoPosition;
   fields: CvTemplateFields;
@@ -35,6 +37,7 @@ export function defaultCvTemplate(): CvTemplateConfig {
   return {
     template: "classic",
     imageUrl: "",
+    headline: "",
     photoShape: "square",
     photoPosition: "right",
     fields: {
@@ -64,6 +67,7 @@ export function normalizeCvTemplate(input: unknown): CvTemplateConfig {
   const raw = input as {
     template?: unknown;
     imageUrl?: unknown;
+    headline?: unknown;
     photoShape?: unknown;
     photoPosition?: unknown;
     fields?: unknown;
@@ -75,6 +79,7 @@ export function normalizeCvTemplate(input: unknown): CvTemplateConfig {
       : base.template;
   const imageUrl =
     typeof raw.imageUrl === "string" && isHttpUrl(raw.imageUrl.trim()) ? raw.imageUrl.trim() : "";
+  const headline = typeof raw.headline === "string" ? raw.headline.trim().slice(0, 120) : "";
   const photoShape =
     typeof raw.photoShape === "string" &&
     (CV_TEMPLATE_PHOTO_SHAPES as readonly string[]).includes(raw.photoShape)
@@ -94,5 +99,5 @@ export function normalizeCvTemplate(input: unknown): CvTemplateConfig {
     }
   }
 
-  return { template, imageUrl, photoShape, photoPosition, fields };
+  return { template, imageUrl, headline, photoShape, photoPosition, fields };
 }

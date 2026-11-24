@@ -126,6 +126,7 @@ export const cvSnapshotSchema = z.object({
     .object({
       template: z.enum(CV_TEMPLATES),
       imageUrl: z.string().default(""),
+      headline: z.string().default(""),
       photoShape: z.enum(CV_TEMPLATE_PHOTO_SHAPES).default("square"),
       photoPosition: z.enum(CV_TEMPLATE_PHOTO_POSITIONS).default("right"),
       fields: z.object({

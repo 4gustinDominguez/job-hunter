@@ -98,6 +98,7 @@ export interface CvLayoutState {
 
 export interface CvVersionsState {
   message: string;
+  ok?: boolean;
 }
 
 export interface CvTemplateState {

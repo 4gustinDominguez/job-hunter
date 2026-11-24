@@ -126,8 +126,10 @@ export default async function ProfilePage() {
         >
           <h2 className="text-sm font-medium">CV versions</h2>
           <p className="mt-1 text-xs text-muted">
-            Snapshots of the <strong>saved</strong> CV — save the form first if you just edited it.
-            Loading one restores its texts, skills and layout; job preferences are never touched.
+            <strong>Save version</strong> snapshots the CV{" "}
+            <strong>exactly as the form above shows it — unsaved edits included</strong> — without
+            saving the profile. <strong>Load</strong> replaces the current CV (texts, sections and
+            template) with that snapshot; job preferences are never touched.
           </p>
           <CvVersionsPanel versions={versions} />
         </section>

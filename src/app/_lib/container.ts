@@ -5,6 +5,7 @@ import {
   AnalyzePendingJobs,
   CreateApplication,
   DeleteApplicationQuestion,
+  DeleteCvVersion,
   DeleteSearchProfile,
   FindQuestionSimilarities,
   GenerateApplicationDocument,
@@ -161,6 +162,7 @@ export const saveProfile = new SaveProfile(candidateProfileRepository);
 export const saveCvLayout = new SaveCvLayout(candidateProfileRepository, saveProfile);
 export const saveCvTemplate = new SaveCvTemplate(candidateProfileRepository, saveProfile);
 export const saveCvVersion = new SaveCvVersion(candidateProfileRepository, cvVersionRepository);
+export const deleteCvVersion = new DeleteCvVersion(cvVersionRepository);
 export const loadCvVersion = new LoadCvVersion(
   candidateProfileRepository,
   cvVersionRepository,

@@ -114,7 +114,7 @@ export function ProfileForm({
   };
 
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <form action={formAction} id="profile-form" className="flex flex-col gap-6">
       {imported ? (
         <p className="rounded-md border border-accent/30 bg-accent-soft px-4 py-3 text-sm text-accent-strong">
           Generated from your CV — review every field before saving.
@@ -392,7 +392,7 @@ export function ProfileForm({
         </Field>
       </section>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <button
           type="submit"
           disabled={pending}
@@ -405,6 +405,10 @@ export function ProfileForm({
             {state.message}
           </output>
         ) : null}
+        <p className="text-xs text-muted">
+          Persists everything above (details, preferences, experience, skills, projects, education)
+          to your profile.
+        </p>
       </div>
     </form>
   );
