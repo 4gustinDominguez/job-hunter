@@ -147,6 +147,9 @@ export const cvSnapshotSchema = z.object({
         location: z.boolean().default(true),
         projectUrls: z.boolean().default(true),
         dates: z.boolean().default(true),
+        used: z.boolean().default(true),
+        builtWith: z.boolean().default(true),
+        highlights: z.boolean().default(true),
       }),
     })
     .optional(),

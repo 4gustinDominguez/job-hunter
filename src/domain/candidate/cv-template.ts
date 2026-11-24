@@ -15,6 +15,9 @@ export const CV_TEMPLATE_FIELD_KEYS = [
   "location",
   "projectUrls",
   "dates",
+  "used",
+  "builtWith",
+  "highlights",
 ] as const;
 
 export type CvTemplateField = (typeof CV_TEMPLATE_FIELD_KEYS)[number];
@@ -47,6 +50,9 @@ export function defaultCvTemplate(): CvTemplateConfig {
       location: true,
       projectUrls: true,
       dates: true,
+      used: true,
+      builtWith: true,
+      highlights: true,
     },
   };
 }

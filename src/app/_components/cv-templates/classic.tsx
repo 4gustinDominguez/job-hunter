@@ -139,8 +139,10 @@ export function ClassicTemplate({ resume, config, layout }: ClassicTemplateProps
               {job.summary ? (
                 <p className="max-w-[72ch] text-sm leading-relaxed text-ink/90">{job.summary}</p>
               ) : null}
-              <Highlights items={job.highlights ?? NO_HIGHLIGHTS} />
-              {job.keywords && job.keywords.length > 0 ? (
+              {config.fields.highlights ? (
+                <Highlights items={job.highlights ?? NO_HIGHLIGHTS} />
+              ) : null}
+              {config.fields.used && job.keywords && job.keywords.length > 0 ? (
                 <p className="text-xs text-muted">Used: {job.keywords.join(" · ")}</p>
               ) : null}
             </li>
@@ -170,10 +172,12 @@ export function ClassicTemplate({ resume, config, layout }: ClassicTemplateProps
                   {project.description}
                 </p>
               ) : null}
-              {project.keywords && project.keywords.length > 0 ? (
+              {config.fields.builtWith && project.keywords && project.keywords.length > 0 ? (
                 <p className="text-xs text-muted">Built with: {project.keywords.join(" · ")}</p>
               ) : null}
-              <Highlights items={project.highlights ?? NO_HIGHLIGHTS} />
+              {config.fields.highlights ? (
+                <Highlights items={project.highlights ?? NO_HIGHLIGHTS} />
+              ) : null}
             </li>
           ))}
         </ol>

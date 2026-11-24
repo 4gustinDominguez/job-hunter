@@ -28,6 +28,9 @@ const FIELD_LABELS: Record<CvTemplateField, string> = {
   location: "Location",
   projectUrls: "Project URLs",
   dates: "Dates (experience & education)",
+  used: "“Used” line under each job",
+  builtWith: "“Built with” line (projects)",
+  highlights: "Achievement bullets",
 };
 
 const PHOTO_SHAPE_LABELS: Record<CvTemplatePhotoShape, string> = {
