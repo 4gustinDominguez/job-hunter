@@ -419,6 +419,52 @@ export async function importProfileFromCvAction(
   }
 }
 
+/** First error per field, prefixed with its full path (e.g. "skills.0.name: …"). */
+function issuesByField(
+  issues: ReadonlyArray<{ path: PropertyKey[]; message: string }>,
+): Record<string, string[]> {
+  const errors: Record<string, string[]> = {};
+  for (const issue of issues) {
+    const field = String(issue.path[0] ?? "form");
+    const location = issue.path.length > 1 ? `${issue.path.join(".")}: ` : "";
+    (errors[field] ??= []).push(`${location}${issue.message}`);
+  }
+  return errors;
+}
+
+/** True when the value is a JSON array whose first item has all the given keys. */
+function jsonFirstHasKeys(value: unknown, keys: string[]): boolean {
+  try {
+    const parsed = JSON.parse(String(value));
+    if (!Array.isArray(parsed) || parsed.length === 0) return false;
+    const first = parsed[0];
+    return typeof first === "object" && first !== null && keys.every((key) => key in first);
+  } catch {
+    return false;
+  }
+}
+
+/** Pasted JSON that clearly belongs to the other textarea (skills ↔ experience). */
+function crossPasteIssue(
+  raw: Record<string, unknown>,
+): { field: string; message: string } | undefined {
+  if (jsonFirstHasKeys(raw.skills, ["company", "position"])) {
+    return {
+      field: "skills",
+      message:
+        "This looks like your Experience JSON (entries with company/position) — paste it into the Experience field instead.",
+    };
+  }
+  if (jsonFirstHasKeys(raw.experience, ["name", "category"])) {
+    return {
+      field: "experience",
+      message:
+        "This looks like your Skills JSON (entries with name/category) — paste it into the Skills field instead.",
+    };
+  }
+  return undefined;
+}
+
 /** All profile-form fields as the form schema sees them (shared by save + version). */
 function readProfileForm(formData: FormData): Record<string, unknown> {
   return {
@@ -452,9 +498,13 @@ export async function saveProfileAction(
 ): Promise<ProfileFormState> {
   await requireSession();
   const raw = readProfileForm(formData);
+  const crossPaste = crossPasteIssue(raw);
+  if (crossPaste) {
+    return { errors: { [crossPaste.field]: [crossPaste.message] }, message: "" };
+  }
   const parsed = profileFormSchema.safeParse(raw);
   if (!parsed.success) {
-    return { errors: parsed.error.flatten().fieldErrors, message: "" };
+    return { errors: issuesByField(parsed.error.issues), message: "" };
   }
   try {
     await saveProfile.run(toSaveProfileInput(parsed.data));
@@ -528,9 +578,14 @@ export async function saveCvVersionAction(
   await requireSession();
   // Versions snapshot the form AS IT IS (unsaved edits included) and never
   // write to the profile — only Save profile or Load change the content.
-  const parsed = profileFormSchema.safeParse(readProfileForm(formData));
+  const raw = readProfileForm(formData);
+  const crossPaste = crossPasteIssue(raw);
+  if (crossPaste) {
+    return { ok: false, message: crossPaste.message };
+  }
+  const parsed = profileFormSchema.safeParse(raw);
   if (!parsed.success) {
-    const first = Object.values(parsed.error.flatten().fieldErrors).flat()[0];
+    const first = Object.values(issuesByField(parsed.error.issues)).flat()[0];
     return {
       ok: false,
       message: first ? `Fix the form first: ${first}` : "The form has errors.",
