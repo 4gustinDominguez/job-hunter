@@ -83,7 +83,7 @@ export const SEED_SKILLS: Array<Omit<typeof profileSkills.$inferInsert, "profile
       yearsOfExperience: 6,
       position: 0,
     },
-    { name: "React", category: "FRAMEWORK", level: "EXPERT", yearsOfExperience: 5, position: 1 },
+    { name: "React", category: "FRONTEND", level: "EXPERT", yearsOfExperience: 5, position: 1 },
     {
       name: "Node.js",
       category: "PROGRAMMING",
@@ -93,7 +93,7 @@ export const SEED_SKILLS: Array<Omit<typeof profileSkills.$inferInsert, "profile
     },
     {
       name: "PostgreSQL",
-      category: "TOOL",
+      category: "DATABASE",
       level: "ADVANCED",
       yearsOfExperience: 4,
       position: 3,

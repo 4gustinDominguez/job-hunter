@@ -21,7 +21,7 @@ export function makeProfile(overrides: Partial<CandidateProfile> = {}): Candidat
     ],
     skills: [
       { id: `skill-ts-${counter}`, name: "TypeScript", category: "PROGRAMMING", level: "EXPERT" },
-      { id: `skill-react-${counter}`, name: "React", category: "FRAMEWORK", level: "EXPERT" },
+      { id: `skill-react-${counter}`, name: "React", category: "FRONTEND", level: "EXPERT" },
       { id: `skill-node-${counter}`, name: "Node.js", category: "PROGRAMMING", level: "ADVANCED" },
     ],
     projects: [],

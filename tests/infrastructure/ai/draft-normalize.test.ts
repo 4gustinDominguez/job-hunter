@@ -64,10 +64,9 @@ describe("tryParseDraft", () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.draft.skills.map((s) => `${s.category}/${s.level}`)).toEqual([
-        "TOOL/ADVANCED",
-        "TOOL/INTERMEDIATE",
-        "TOOL/ADVANCED",
-        "SOFT_SKILL/EXPERT",
+        "DATABASE/ADVANCED",
+        "BACKEND/INTERMEDIATE",
+        "CLOUD_DEVOPS/ADVANCED",
       ]);
     }
   });

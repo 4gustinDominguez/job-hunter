@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { SKILL_CATEGORIES, SKILL_LEVELS } from "@/domain/candidate/skill";
+import {
+  SKILL_CATEGORIES,
+  SKILL_LEVELS,
+  LEGACY_SKILL_CATEGORY_MAP,
+} from "@/domain/candidate/skill";
 import { CV_SECTIONS } from "@/domain/candidate/cv-layout";
 import {
   CV_TEMPLATE_PHOTO_POSITIONS,
@@ -14,7 +18,14 @@ export const isoDateString = z
 export const skillItemSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, "Skill name is required"),
-  category: z.enum(SKILL_CATEGORIES),
+  // Legacy taxonomy values (FRAMEWORK, TOOL) are accepted and upgraded.
+  category: z
+    .enum(SKILL_CATEGORIES)
+    .or(
+      z
+        .enum(Object.keys(LEGACY_SKILL_CATEGORY_MAP) as [string, ...string[]])
+        .transform((value) => LEGACY_SKILL_CATEGORY_MAP[value]),
+    ),
   level: z.enum(SKILL_LEVELS).default("INTERMEDIATE"),
   yearsOfExperience: z.number().int().nonnegative().optional(),
   lastUsed: isoDateString.optional(),

@@ -332,7 +332,7 @@ export function ProfileForm({
           label="Skills"
           htmlFor="pf-skills"
           error={state.errors.skills?.[0]}
-          hint='[{"name":"TypeScript","category":"PROGRAMMING","level":"EXPERT","yearsOfExperience":6}] · categories: PROGRAMMING, FRAMEWORK, TOOL, SOFT_SKILL, LANGUAGE · levels: BEGINNER, INTERMEDIATE, ADVANCED, EXPERT'
+          hint='[{"name":"TypeScript","category":"PROGRAMMING","level":"EXPERT","yearsOfExperience":6}] · categories: PROGRAMMING, FRONTEND, BACKEND, DATABASE, ARCHITECTURE, CLOUD_DEVOPS, TESTING, PERFORMANCE, AI, LANGUAGE · levels: BEGINNER, INTERMEDIATE, ADVANCED, EXPERT'
         >
           <textarea
             id="pf-skills"

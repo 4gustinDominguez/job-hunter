@@ -4,6 +4,7 @@ import type { CandidateProfile } from "@/domain/candidate/candidate-profile";
 import type { Education } from "@/domain/candidate/education";
 import type { Experience } from "@/domain/candidate/experience";
 import type { Skill } from "@/domain/candidate/skill";
+import { normalizeSkillCategory } from "@/domain/candidate/skill";
 import type { db } from "./client";
 import { candidateProfiles, profileSkills } from "./schema";
 
@@ -49,7 +50,9 @@ function toDomainSkill(row: SkillRow): Skill {
   return {
     id: row.id,
     name: row.name,
-    category: row.category,
+    // Rows written under the old taxonomy (FRAMEWORK, TOOL) are upgraded here;
+    // saving the profile persists the new category.
+    category: normalizeSkillCategory(row.category) ?? "PROGRAMMING",
     level: row.level,
     yearsOfExperience: row.yearsOfExperience ?? undefined,
     lastUsed: row.lastUsed ?? undefined,

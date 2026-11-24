@@ -1,22 +1,43 @@
 import { profileDraftSchema, type ProfileDraft } from "@/application/cv/profile-draft-schema";
-import { SKILL_CATEGORIES, SKILL_LEVELS } from "@/domain/candidate/skill";
+import { SKILL_CATEGORIES, SKILL_LEVELS, RETIRED_SKILL_CATEGORIES } from "@/domain/candidate/skill";
 import { extractJsonBlock } from "./json-from-text";
 
 const PRESENT_DATE_VALUES = new Set(["present", "current", "now", "ongoing"]);
 
+/** Model drift → the current taxonomy (aliases win over the allowed list). */
 const CATEGORY_ALIASES: Record<string, string> = {
-  DATABASE: "TOOL",
-  DATABASES: "TOOL",
-  DB: "TOOL",
-  DATA: "TOOL",
-  DATASTORE: "TOOL",
-  CLOUD: "TOOL",
-  DEVOPS: "TOOL",
-  API: "TOOL",
-  APIS: "TOOL",
-  TESTING: "TOOL",
-  LIBRARY: "FRAMEWORK",
-  FRAMEWORKS: "FRAMEWORK",
+  DB: "DATABASE",
+  DATA: "DATABASE",
+  DATASTORE: "DATABASE",
+  DATA_BASE: "DATABASE",
+  CLOUD: "CLOUD_DEVOPS",
+  DEVOPS: "CLOUD_DEVOPS",
+  INFRA: "CLOUD_DEVOPS",
+  INFRASTRUCTURE: "CLOUD_DEVOPS",
+  AWS: "CLOUD_DEVOPS",
+  TOOL: "CLOUD_DEVOPS",
+  TOOLS: "CLOUD_DEVOPS",
+  API: "BACKEND",
+  APIS: "BACKEND",
+  SERVER: "BACKEND",
+  QA: "TESTING",
+  QUALITY: "TESTING",
+  UI: "FRONTEND",
+  UX: "FRONTEND",
+  FRAMEWORK: "FRONTEND",
+  FRAMEWORKS: "FRONTEND",
+  LIBRARY: "FRONTEND",
+  DESIGN: "ARCHITECTURE",
+  ARCH: "ARCHITECTURE",
+  PERF: "PERFORMANCE",
+  OBSERVABILITY: "PERFORMANCE",
+  MONITORING: "PERFORMANCE",
+  ML: "AI",
+  LLM: "AI",
+  MACHINE_LEARNING: "AI",
+  LANG: "LANGUAGE",
+  LANGUAGES: "LANGUAGE",
+  CODING: "PROGRAMMING",
 };
 
 const LEVEL_ALIASES: Record<string, string> = {
@@ -103,6 +124,20 @@ function stripNullsAndNormalize(value: unknown): unknown {
   return value;
 }
 
+/** Skills whose category left the taxonomy (e.g. SOFT_SKILL) don't belong in it. */
+function dropRetiredSkills(value: unknown): unknown {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return value;
+  const draft = value as Record<string, unknown>;
+  if (!Array.isArray(draft.skills)) return value;
+  return {
+    ...draft,
+    skills: draft.skills.filter((item) => {
+      const category = (item as { category?: unknown } | null)?.category;
+      return !(typeof category === "string" && RETIRED_SKILL_CATEGORIES.has(category));
+    }),
+  };
+}
+
 function valueAtPath(root: unknown, path: ReadonlyArray<PropertyKey>): unknown {
   let current: unknown = root;
   for (const segment of path) {
@@ -123,7 +158,7 @@ export function tryParseDraft(
   } catch {
     return { ok: false, issue: "The response is not valid JSON." };
   }
-  const normalized = stripNullsAndNormalize(parsedJson);
+  const normalized = dropRetiredSkills(stripNullsAndNormalize(parsedJson));
   const result = profileDraftSchema.safeParse(normalized);
   if (!result.success) {
     const issue = result.error.issues

@@ -44,7 +44,7 @@ Respond with ONLY one JSON object (no markdown fences, no commentary) with exact
   "name": string, "email": string, "phone"?: string, "summary"?: string,
   "location"?: {"city"?: string, "region"?: string, "country"?: string},
   "experience": [{"company": string, "position": string, "startDate": "YYYY-MM-DD", "endDate"?: "YYYY-MM-DD", "description"?: string, "achievements"?: string[], "skills"?: string[]}],
-  "skills": [{"name": string, "category": "PROGRAMMING"|"FRAMEWORK"|"TOOL"|"SOFT_SKILL"|"LANGUAGE", "level": "BEGINNER"|"INTERMEDIATE"|"ADVANCED"|"EXPERT", "yearsOfExperience"?: number, "lastUsed"?: "YYYY-MM-DD"}],
+  "skills": [{"name": string, "category": "PROGRAMMING"|"FRONTEND"|"BACKEND"|"DATABASE"|"ARCHITECTURE"|"CLOUD_DEVOPS"|"TESTING"|"PERFORMANCE"|"AI"|"LANGUAGE", "level": "BEGINNER"|"INTERMEDIATE"|"ADVANCED"|"EXPERT", "yearsOfExperience"?: number, "lastUsed"?: "YYYY-MM-DD"}],
   "projects": [{"name": string, "description"?: string, "url"?: string, "technologies"?: string[], "highlights"?: string[]}],
   "education": [{"institution": string, "degree": string, "field": string, "startDate": "YYYY-MM-DD", "endDate"?: "YYYY-MM-DD", "achievements"?: string[]}],
   "preferences": {"desiredRoles"?: string[], "desiredLocations"?: string[], "remotePreference"?: "ANY"|"ONSITE"|"HYBRID"|"REMOTE", "salaryExpectation"?: {"minimum": number, "currency": string}, "excludedCompanies"?: string[], "employmentTypes"?: ("FULL_TIME"|"PART_TIME"|"CONTRACT"|"FREELANCE"|"INTERNSHIP")[]}
