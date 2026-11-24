@@ -26,6 +26,7 @@ const FIELD_LABELS: Record<CvTemplateField, string> = {
   email: "Email",
   phone: "Phone",
   location: "Location",
+  links: "Links (LinkedIn, GitHub…)",
   projectUrls: "Project URLs",
   dates: "Dates (experience & education)",
   used: "“Used” line under each job",

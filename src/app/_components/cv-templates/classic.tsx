@@ -236,6 +236,25 @@ export function ClassicTemplate({ resume, config, layout }: ClassicTemplateProps
               {contact}
             </p>
           ) : null}
+          {config.fields.links && resume.basics.profiles && resume.basics.profiles.length > 0 ? (
+            <p
+              className={`flex flex-wrap items-center gap-x-4 gap-y-1 text-sm ${
+                photoOnTop ? "justify-center" : ""
+              }`}
+            >
+              {resume.basics.profiles.map((profileLink) => (
+                <a
+                  key={profileLink.url}
+                  href={profileLink.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-accent-strong hover:underline"
+                >
+                  {profileLink.network}
+                </a>
+              ))}
+            </p>
+          ) : null}
         </div>
         {photoNode}
       </header>

@@ -1,5 +1,6 @@
 import type { CvLayout } from "@/domain/candidate/cv-layout";
 import type { CvTemplateConfig } from "@/domain/candidate/cv-template";
+import type { ProfileLink } from "@/domain/candidate/profile-links";
 import type { Education } from "@/domain/candidate/education";
 import type { Experience } from "@/domain/candidate/experience";
 import type { Project } from "@/domain/candidate/project";
@@ -21,6 +22,7 @@ export interface CvSnapshot {
   experience: Experience[];
   projects: Project[];
   education: Education[];
+  links?: ProfileLink[];
   cvLayout?: CvLayout;
   cvTemplate?: CvTemplateConfig;
 }

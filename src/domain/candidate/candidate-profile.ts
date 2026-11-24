@@ -4,6 +4,7 @@ import type { Project } from "@/domain/candidate/project";
 import type { Skill } from "@/domain/candidate/skill";
 import type { CvLayout } from "@/domain/candidate/cv-layout";
 import type { CvTemplateConfig } from "@/domain/candidate/cv-template";
+import type { ProfileLink } from "@/domain/candidate/profile-links";
 import type { EmploymentType } from "@/domain/job/enums";
 import type { Location } from "@/domain/shared/location";
 import type { RemotePreference } from "@/domain/shared/remote-preference";
@@ -31,6 +32,8 @@ export interface CandidateProfile {
   skills: Skill[];
   projects: Project[];
   education: Education[];
+  /** External links (LinkedIn, GitHub…); shown in the CV header when enabled. */
+  links?: ProfileLink[];
   /** Section order/visibility of the public CV; absent = the default order. */
   cvLayout?: CvLayout;
   /** PDF template (classic) + per-field toggles; absent = defaults. */

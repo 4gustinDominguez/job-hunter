@@ -28,6 +28,7 @@ export class SaveProfile {
       // them keep them.
       cvLayout: input.cvLayout ?? existing?.cvLayout ?? undefined,
       cvTemplate: input.cvTemplate ?? existing?.cvTemplate ?? undefined,
+      links: input.links ?? existing?.links ?? undefined,
     };
     return this.profiles.save(profile);
   }

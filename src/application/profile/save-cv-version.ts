@@ -4,6 +4,7 @@ import type { CvVersionRepositoryPort } from "@/application/ports/cv-version-rep
 import type { SaveProfileInput } from "@/application/profile/save-profile";
 import { normalizeCvLayout } from "@/domain/candidate/cv-layout";
 import { normalizeCvTemplate } from "@/domain/candidate/cv-template";
+import { normalizeLinks } from "@/domain/candidate/profile-links";
 import type { CvSnapshot, CvVersion } from "@/domain/candidate/cv-version";
 
 const MAX_LABEL_LENGTH = 80;
@@ -46,6 +47,7 @@ export class SaveCvVersion {
       experience: input.experience,
       projects: input.projects,
       education: input.education,
+      links: normalizeLinks(input.links),
       cvLayout: normalizeCvLayout(current.cvLayout),
       cvTemplate: normalizeCvTemplate(current.cvTemplate),
     };

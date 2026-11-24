@@ -110,6 +110,7 @@ function toSaveProfileInput(values: ProfileFormValues): SaveProfileInput {
       startDate: new Date(item.startDate),
       endDate: item.endDate ? new Date(item.endDate) : undefined,
     })),
+    links: values.links,
     preferences: {
       desiredRoles: values.desiredRoles,
       desiredLocations: values.desiredLocations,
@@ -489,6 +490,7 @@ function readProfileForm(formData: FormData): Record<string, unknown> {
     skills: String(formData.get("skills") ?? "[]"),
     projects: String(formData.get("projects") ?? "[]"),
     education: String(formData.get("education") ?? "[]"),
+    links: String(formData.get("links") ?? "[]"),
   };
 }
 

@@ -6,6 +6,7 @@ import type { SaveProfile } from "@/application/profile/save-profile";
 import type { CandidateProfile } from "@/domain/candidate/candidate-profile";
 import { normalizeCvLayout } from "@/domain/candidate/cv-layout";
 import { normalizeCvTemplate } from "@/domain/candidate/cv-template";
+import { normalizeLinks } from "@/domain/candidate/profile-links";
 
 export class LoadCvVersion {
   constructor(
@@ -41,6 +42,8 @@ export class LoadCvVersion {
       experience: snapshot.experience,
       projects: snapshot.projects,
       education: snapshot.education,
+      // Versions predating links keep the current ones (same rule as the template).
+      links: snapshot.links ? normalizeLinks(snapshot.links) : current.links,
       cvLayout: normalizeCvLayout(snapshot.cvLayout),
       // Versions saved before template configs existed carry no look — keep
       // the current one instead of resetting it to defaults.

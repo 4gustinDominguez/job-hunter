@@ -10,6 +10,7 @@ import {
   CV_TEMPLATE_PHOTO_SHAPES,
   CV_TEMPLATES,
 } from "@/domain/candidate/cv-template";
+import { MAX_PROFILE_LINKS } from "@/domain/candidate/profile-links";
 
 export const isoDateString = z
   .string()
@@ -60,6 +61,19 @@ export const educationItemSchema = z.object({
   endDate: isoDateString.optional(),
   achievements: z.array(z.string()).default([]),
 });
+
+/** LinkedIn/GitHub-style links; protocol is added when missing. */
+export const profileLinkSchema = z.object({
+  label: z.string().trim().min(1, "Label is required"),
+  url: z
+    .string()
+    .trim()
+    .min(1, "URL is required")
+    .transform((value) => (/^https?:\/\//i.test(value) ? value : `https://${value}`))
+    .pipe(z.string().url("Must be a valid URL — e.g. https://linkedin.com/in/you")),
+});
+
+export const profileLinksSchema = z.array(profileLinkSchema).max(MAX_PROFILE_LINKS);
 
 /** Raw payload from the layout editor (one hidden JSON input). */
 export const cvLayoutEntrySchema = z.object({
@@ -132,6 +146,7 @@ export const cvSnapshotSchema = z.object({
       achievements: z.array(z.string()).default([]),
     }),
   ),
+  links: profileLinksSchema.optional(),
   cvLayout: cvLayoutSchema.optional(),
   cvTemplate: z
     .object({
@@ -145,6 +160,7 @@ export const cvSnapshotSchema = z.object({
         email: z.boolean().default(true),
         phone: z.boolean().default(true),
         location: z.boolean().default(true),
+        links: z.boolean().default(true),
         projectUrls: z.boolean().default(true),
         dates: z.boolean().default(true),
         used: z.boolean().default(true),

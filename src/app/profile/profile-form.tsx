@@ -6,6 +6,7 @@ import type { ProfileFormState } from "@/app/_lib/schemas";
 import type { SaveProfileInput } from "@/application/profile/save-profile";
 import { EMPLOYMENT_TYPES } from "@/domain/job/enums";
 import { REMOTE_PREFERENCES } from "@/domain/shared/remote-preference";
+import { LinksEditor } from "./links-editor";
 
 const initialState: ProfileFormState = { errors: {}, message: "" };
 
@@ -193,6 +194,19 @@ export function ProfileForm({
             className={jsonClass}
           />
         </Field>
+
+        <div className="flex flex-col gap-1">
+          <span className="text-xs text-muted">Links</span>
+          <LinksEditor initialLinks={profile?.links} name="links" />
+          <p className="text-[11px] text-muted">
+            LinkedIn, GitHub, portfolio… — shown in the CV header and toggleable in the CV builder.
+          </p>
+          {state.errors.links?.[0] ? (
+            <p role="alert" className="text-xs text-danger">
+              {state.errors.links?.[0]}
+            </p>
+          ) : null}
+        </div>
       </section>
 
       <section className="flex flex-col gap-4 rounded-lg border border-line bg-surface p-4">

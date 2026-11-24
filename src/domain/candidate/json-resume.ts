@@ -2,6 +2,7 @@ import type { CandidateProfile } from "@/domain/candidate/candidate-profile";
 import type { Location } from "@/domain/shared/location";
 import { defaultCvTemplate } from "@/domain/candidate/cv-template";
 import type { CvTemplateConfig } from "@/domain/candidate/cv-template";
+import { normalizeLinks } from "@/domain/candidate/profile-links";
 import { SKILL_CATEGORY_LABELS, SKILL_CATEGORY_ORDER } from "@/domain/candidate/skill";
 
 export const JSON_RESUME_SCHEMA =
@@ -16,6 +17,8 @@ export interface JsonResume {
     phone?: string;
     location?: { city?: string; region?: string; country?: string; remote?: boolean };
     summary?: string;
+    /** LinkedIn/GitHub-style links (JSON Resume `basics.profiles`). */
+    profiles?: Array<{ network: string; url: string }>;
   };
   work: Array<{
     name: string;
@@ -77,6 +80,7 @@ export function toJsonResume(
     .toSorted((a, b) => b.startDate.getTime() - a.startDate.getTime())[0]
     ?.position?.trim();
   const label = config.headline.trim() || latestPosition;
+  const links = normalizeLinks(profile.links);
 
   const work = profile.experience.map((item) => ({
     name: item.company,
@@ -121,6 +125,10 @@ export function toJsonResume(
       phone: profile.phone?.trim() || undefined,
       location: toJsonLocation(profile.location),
       summary: profile.summary?.trim() || undefined,
+      profiles:
+        links.length > 0
+          ? links.map((link) => ({ network: link.label, url: link.url }))
+          : undefined,
     },
     work,
     education,

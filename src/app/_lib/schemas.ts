@@ -3,6 +3,7 @@ import {
   educationItemSchema,
   experienceItemSchema,
   projectItemSchema,
+  profileLinksSchema,
   skillItemSchema,
 } from "@/application/profile/profile-schemas";
 import type { SaveProfileInput } from "@/application/profile/save-profile";
@@ -65,6 +66,7 @@ export const profileFormSchema = z.object({
   skills: z.string().transform(jsonArray("Skills")).pipe(z.array(skillItemSchema)),
   projects: z.string().transform(jsonArray("Projects")).pipe(z.array(projectItemSchema)),
   education: z.string().transform(jsonArray("Education")).pipe(z.array(educationItemSchema)),
+  links: z.string().transform(jsonArray("Links")).pipe(profileLinksSchema),
 });
 
 export const searchProfileFormSchema = z.object({
